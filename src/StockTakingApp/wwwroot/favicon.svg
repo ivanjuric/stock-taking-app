@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4F9CF9"/>
+      <stop offset="100%" style="stop-color:#2E7DD1"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Rounded square background -->
+  <rect x="1" y="1" width="30" height="30" rx="6" fill="url(#bg)"/>
+  
+  <!-- Simple box icon -->
+  <g transform="translate(16, 17)">
+    <path d="M-8 -2 L0 -7 L8 -2 L8 6 L0 10 L-8 6 Z" 
+          fill="white" 
+          fill-opacity="0.95"/>
+    <path d="M-8 -2 L0 3 L0 10 L-8 6 Z" 
+          fill="white" 
+          fill-opacity="0.7"/>
+    <line x1="0" y1="-7" x2="0" y2="3" 
+          stroke="#2E7DD1" 
+          stroke-width="1" 
+          stroke-linecap="round"/>
+  </g>
+  
+  <!-- Small checkmark -->
+  <circle cx="24" cy="8" r="5" fill="#6BB8FF"/>
+  <circle cx="24" cy="8" r="4" fill="white"/>
+  <path d="M21.5 8 L23 9.5 L26.5 6" 
+        stroke="#4F9CF9" 
+        stroke-width="1.5" 
+        stroke-linecap="round" 
+        stroke-linejoin="round"
+        fill="none"/>
+</svg>

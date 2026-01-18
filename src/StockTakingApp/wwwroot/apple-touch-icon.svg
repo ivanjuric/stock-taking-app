@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4F9CF9"/>
+      <stop offset="100%" style="stop-color:#2E7DD1"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Full background for Apple touch icon -->
+  <rect width="180" height="180" fill="url(#bg)"/>
+  
+  <!-- Box icon centered -->
+  <g transform="translate(90, 95)">
+    <path d="M-40 -8 L0 -35 L40 -8 L40 28 L0 50 L-40 28 Z" 
+          fill="white" 
+          fill-opacity="0.95"/>
+    <path d="M-40 -8 L0 15 L0 50 L-40 28 Z" 
+          fill="white" 
+          fill-opacity="0.7"/>
+    <line x1="0" y1="-35" x2="0" y2="15" 
+          stroke="#2E7DD1" 
+          stroke-width="3" 
+          stroke-linecap="round"/>
+  </g>
+  
+  <!-- Checkmark badge -->
+  <g transform="translate(130, 50)">
+    <circle cx="0" cy="0" r="24" fill="#6BB8FF"/>
+    <circle cx="0" cy="0" r="20" fill="white"/>
+    <path d="M-10 0 L-3 7 L10 -7" 
+          stroke="#4F9CF9" 
+          stroke-width="4" 
+          stroke-linecap="round" 
+          stroke-linejoin="round"
+          fill="none"/>
+  </g>
+</svg>
