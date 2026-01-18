@@ -11,19 +11,52 @@ namespace StockTakingApp.Controllers;
 [Authorize(Roles = "Admin")]
 public sealed class LocationsController(AppDbContext context) : Controller
 {
-    public async Task<IActionResult> Index(string? search)
+    private const int DefaultPageSize = 20;
+
+    public async Task<IActionResult> Index(
+        string? search,
+        string? sortBy,
+        bool sortDesc = false,
+        int page = 1,
+        int pageSize = DefaultPageSize)
     {
         ViewData["Title"] = "Locations";
 
         var query = context.Locations.AsQueryable();
 
-        if (!string.IsNullOrEmpty(search))
+        // Search filter
+        if (!string.IsNullOrWhiteSpace(search))
         {
-            query = query.Where(l => l.Name.Contains(search) || l.Code.Contains(search));
+            var searchLower = search.ToLower();
+            query = query.Where(l => 
+                l.Name.ToLower().Contains(searchLower) || 
+                l.Code.ToLower().Contains(searchLower) ||
+                (l.Description != null && l.Description.ToLower().Contains(searchLower)));
         }
 
+        // Get total count before pagination
+        var totalItems = await query.CountAsync();
+
+        // Sorting
+        query = sortBy?.ToLower() switch
+        {
+            "name" => sortDesc ? query.OrderByDescending(l => l.Name) : query.OrderBy(l => l.Name),
+            "products" => sortDesc 
+                ? query.OrderByDescending(l => l.Stocks.Select(s => s.ProductId).Distinct().Count()) 
+                : query.OrderBy(l => l.Stocks.Select(s => s.ProductId).Distinct().Count()),
+            "stock" => sortDesc 
+                ? query.OrderByDescending(l => l.Stocks.Sum(s => s.Quantity)) 
+                : query.OrderBy(l => l.Stocks.Sum(s => s.Quantity)),
+            _ => sortDesc ? query.OrderByDescending(l => l.Code) : query.OrderBy(l => l.Code) // default: code
+        };
+
+        // Pagination
+        page = Math.Max(1, page);
+        pageSize = Math.Clamp(pageSize, 10, 100);
+
         var locations = await query
-            .OrderBy(l => l.Code)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .Select(l => new LocationViewModel
             {
                 Id = l.Id,
@@ -36,11 +69,26 @@ public sealed class LocationsController(AppDbContext context) : Controller
             })
             .ToListAsync();
 
+        var pagedResult = new PagedResult<LocationViewModel>
+        {
+            Items = locations,
+            Page = page,
+            PageSize = pageSize,
+            TotalItems = totalItems,
+            Search = search,
+            SortBy = sortBy,
+            SortDesc = sortDesc
+        };
+
         var model = new LocationListViewModel
         {
-            Locations = locations,
-            SearchTerm = search
+            Locations = pagedResult,
+            Pagination = PaginationViewModel.FromPagedResult(pagedResult, "/locations")
         };
+
+        // Return partial for HTMX requests
+        if (Request.Headers.ContainsKey("HX-Request"))
+            return PartialView("_LocationList", model);
 
         return View(model);
     }
@@ -116,7 +164,7 @@ public sealed class LocationsController(AppDbContext context) : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    [HttpPost]
+    [HttpDelete]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(int id)
     {

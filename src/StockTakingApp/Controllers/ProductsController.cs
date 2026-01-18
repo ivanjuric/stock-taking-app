@@ -11,24 +11,55 @@ namespace StockTakingApp.Controllers;
 [Authorize(Roles = "Admin")]
 public sealed class ProductsController(AppDbContext context) : Controller
 {
-    public async Task<IActionResult> Index(string? search, string? category)
+    private const int DefaultPageSize = 20;
+
+    public async Task<IActionResult> Index(
+        string? search,
+        string? category,
+        string? sortBy,
+        bool sortDesc = false,
+        int page = 1,
+        int pageSize = DefaultPageSize)
     {
         ViewData["Title"] = "Products";
 
         var query = context.Products.AsQueryable();
 
-        if (!string.IsNullOrEmpty(search))
+        // Search filter
+        if (!string.IsNullOrWhiteSpace(search))
         {
-            query = query.Where(p => p.Name.Contains(search) || p.Sku.Contains(search));
+            var searchLower = search.ToLower();
+            query = query.Where(p => 
+                p.Name.ToLower().Contains(searchLower) || 
+                p.Sku.ToLower().Contains(searchLower) ||
+                (p.Description != null && p.Description.ToLower().Contains(searchLower)));
         }
 
-        if (!string.IsNullOrEmpty(category))
+        // Category filter
+        if (!string.IsNullOrWhiteSpace(category))
         {
             query = query.Where(p => p.Category == category);
         }
 
+        // Get total count before pagination
+        var totalItems = await query.CountAsync();
+
+        // Sorting
+        query = sortBy?.ToLower() switch
+        {
+            "sku" => sortDesc ? query.OrderByDescending(p => p.Sku) : query.OrderBy(p => p.Sku),
+            "category" => sortDesc ? query.OrderByDescending(p => p.Category) : query.OrderBy(p => p.Category),
+            "created" => sortDesc ? query.OrderByDescending(p => p.CreatedAt) : query.OrderBy(p => p.CreatedAt),
+            _ => sortDesc ? query.OrderByDescending(p => p.Name) : query.OrderBy(p => p.Name) // default: name
+        };
+
+        // Pagination
+        page = Math.Max(1, page);
+        pageSize = Math.Clamp(pageSize, 10, 100);
+
         var products = await query
-            .OrderBy(p => p.Name)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .Select(p => p.ToViewModel())
             .ToListAsync();
 
@@ -38,13 +69,30 @@ public sealed class ProductsController(AppDbContext context) : Controller
             .OrderBy(c => c)
             .ToListAsync();
 
+        var pagedResult = new PagedResult<ProductViewModel>
+        {
+            Items = products,
+            Page = page,
+            PageSize = pageSize,
+            TotalItems = totalItems,
+            Search = search,
+            SortBy = sortBy,
+            SortDesc = sortDesc
+        };
+
+        var extraParams = !string.IsNullOrEmpty(category) ? $"category={Uri.EscapeDataString(category)}" : null;
+
         var model = new ProductListViewModel
         {
-            Products = products,
-            SearchTerm = search,
+            Products = pagedResult,
             CategoryFilter = category,
-            Categories = categories
+            Categories = categories,
+            Pagination = PaginationViewModel.FromPagedResult(pagedResult, "/products", extraParams)
         };
+
+        // Return partial for HTMX requests
+        if (Request.Headers.ContainsKey("HX-Request"))
+            return PartialView("_ProductList", model);
 
         return View(model);
     }
@@ -121,7 +169,7 @@ public sealed class ProductsController(AppDbContext context) : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    [HttpPost]
+    [HttpDelete]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(int id)
     {

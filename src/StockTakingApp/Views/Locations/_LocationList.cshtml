@@ -1,0 +1,117 @@
+@model LocationListViewModel
+@{
+    string SortUrl(string column)
+    {
+        var isCurrentSort = Model.Locations.SortBy?.Equals(column, StringComparison.OrdinalIgnoreCase) == true;
+        var newDesc = isCurrentSort && !Model.Locations.SortDesc;
+        var search = Model.Locations.Search;
+        
+        var url = $"/locations?sortBy={column}&sortDesc={newDesc}";
+        if (!string.IsNullOrEmpty(search)) url += $"&search={Uri.EscapeDataString(search)}";
+        return url;
+    }
+    
+    string SortClass(string column)
+    {
+        var isCurrentSort = Model.Locations.SortBy?.Equals(column, StringComparison.OrdinalIgnoreCase) == true;
+        if (!isCurrentSort) return "sortable";
+        return Model.Locations.SortDesc ? "sortable sorted desc" : "sortable sorted";
+    }
+}
+
+<div class="table-container">
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="@SortClass("code")"
+                    hx-get="@SortUrl("code")"
+                    hx-target="#list-container"
+                    hx-swap="innerHTML"
+                    hx-push-url="true">
+                    Code
+                    <svg class="sort-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M8 4L8 12M8 4L5 7M8 4L11 7"/>
+                    </svg>
+                </th>
+                <th class="@SortClass("name")"
+                    hx-get="@SortUrl("name")"
+                    hx-target="#list-container"
+                    hx-swap="innerHTML"
+                    hx-push-url="true">
+                    Name
+                    <svg class="sort-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M8 4L8 12M8 4L5 7M8 4L11 7"/>
+                    </svg>
+                </th>
+                <th>Description</th>
+                <th class="@SortClass("products")"
+                    hx-get="@SortUrl("products")"
+                    hx-target="#list-container"
+                    hx-swap="innerHTML"
+                    hx-push-url="true">
+                    Products
+                    <svg class="sort-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M8 4L8 12M8 4L5 7M8 4L11 7"/>
+                    </svg>
+                </th>
+                <th class="@SortClass("stock")"
+                    hx-get="@SortUrl("stock")"
+                    hx-target="#list-container"
+                    hx-swap="innerHTML"
+                    hx-push-url="true">
+                    Total Stock
+                    <svg class="sort-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M8 4L8 12M8 4L5 7M8 4L11 7"/>
+                    </svg>
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var location in Model.Locations.Items)
+            {
+                <tr id="location-@location.Id">
+                    <td><code>@location.Code</code></td>
+                    <td class="font-medium">@location.Name</td>
+                    <td class="text-muted text-sm">@(location.Description ?? "-")</td>
+                    <td>@location.ProductCount</td>
+                    <td>@location.TotalStock units</td>
+                    <td class="table-actions">
+                        <a asp-controller="Stock" asp-action="Index" asp-route-locationId="@location.Id" class="btn btn-sm btn-secondary">View Stock</a>
+                        <a asp-action="Edit" asp-route-id="@location.Id" class="btn btn-sm btn-secondary">Edit</a>
+                        <button type="button" class="btn btn-sm btn-danger"
+                                hx-delete="/locations/delete/@location.Id"
+                                hx-target="#location-@location.Id"
+                                hx-swap="outerHTML"
+                                hx-confirm="Are you sure you want to delete this location?">
+                            Delete
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@if (Model.Locations.TotalItems == 0)
+{
+    <div class="card-body">
+        <div class="empty-state">
+            <p>No locations found</p>
+            @if (!string.IsNullOrEmpty(Model.Locations.Search))
+            {
+                <a href="/locations" class="btn btn-secondary mt-md">Clear Search</a>
+            }
+            else
+            {
+                <a asp-action="Create" class="btn btn-primary mt-md">Add First Location</a>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <div class="card-footer">
+        @await Html.PartialAsync("~/Views/Shared/_Pagination.cshtml", Model.Pagination)
+    </div>
+}

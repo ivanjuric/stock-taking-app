@@ -641,6 +641,147 @@ textarea.form-control {
     gap: var(--space-xs);
 }
 
+/* Sortable table headers */
+.table th.sortable {
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+}
+
+.table th.sortable:hover {
+    background: var(--color-border);
+}
+
+.table th .sort-icon {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    vertical-align: middle;
+    margin-left: var(--space-xs);
+    opacity: 0.4;
+}
+
+.table th.sorted .sort-icon {
+    opacity: 1;
+}
+
+.table th.sorted.desc .sort-icon {
+    transform: rotate(180deg);
+}
+
+/* === Pagination === */
+.pagination-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-md) 0;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+}
+
+.pagination-info {
+    white-space: nowrap;
+}
+
+.pagination {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+.pagination-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 var(--space-sm);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-text);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    transition: all var(--transition-fast);
+}
+
+.pagination-btn:hover:not(.disabled):not(.active) {
+    background: var(--color-surface-hover);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    text-decoration: none;
+}
+
+.pagination-btn.active {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
+}
+
+.pagination-btn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.pagination-ellipsis {
+    padding: 0 var(--space-xs);
+    color: var(--color-text-muted);
+}
+
+/* === Search/Filter Bar === */
+.filter-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+    flex-wrap: wrap;
+}
+
+.filter-bar .form-control {
+    width: auto;
+    min-width: 200px;
+}
+
+.search-input-wrapper {
+    position: relative;
+    flex: 1;
+    max-width: 400px;
+}
+
+.search-input-wrapper .search-icon {
+    position: absolute;
+    left: var(--space-sm);
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-text-muted);
+    pointer-events: none;
+}
+
+.search-input-wrapper .form-control {
+    padding-left: calc(var(--space-sm) + 24px);
+}
+
+.search-input-wrapper .clear-search {
+    position: absolute;
+    right: var(--space-xs);
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    padding: var(--space-xs);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.search-input-wrapper .clear-search:hover {
+    color: var(--color-text);
+}
+
 /* === Badges & Status === */
 .badge {
     display: inline-flex;

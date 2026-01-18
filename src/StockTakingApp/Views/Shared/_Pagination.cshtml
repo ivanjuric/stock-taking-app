@@ -1,0 +1,108 @@
+@model StockTakingApp.Models.ViewModels.PaginationViewModel
+
+@if (Model.TotalPages > 0)
+{
+    <div class="pagination-container">
+        <div class="pagination-info text-muted text-sm">
+            Showing @Model.FirstItem - @Model.LastItem of @Model.TotalItems
+        </div>
+        
+        @if (Model.TotalPages > 1)
+        {
+            <nav class="pagination" aria-label="Pagination">
+                <a href="@Model.BuildUrl(1)" 
+                   class="pagination-btn @(Model.Page == 1 ? "disabled" : "")"
+                   hx-get="@Model.BuildUrl(1)"
+                   hx-target="#list-container"
+                   hx-swap="innerHTML"
+                   hx-push-url="true"
+                   @(Model.Page == 1 ? "aria-disabled=true tabindex=-1" : "")>
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M11 12L7 8L11 4M5 12L5 4"/>
+                    </svg>
+                </a>
+                
+                <a href="@Model.BuildUrl(Model.Page - 1)" 
+                   class="pagination-btn @(Model.HasPrevious ? "" : "disabled")"
+                   hx-get="@Model.BuildUrl(Model.Page - 1)"
+                   hx-target="#list-container"
+                   hx-swap="innerHTML"
+                   hx-push-url="true"
+                   @(!Model.HasPrevious ? "aria-disabled=true tabindex=-1" : "")>
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M10 12L6 8L10 4"/>
+                    </svg>
+                </a>
+                
+                @{
+                    var startPage = Math.Max(1, Model.Page - 2);
+                    var endPage = Math.Min(Model.TotalPages, startPage + 4);
+                    startPage = Math.Max(1, endPage - 4);
+                }
+                
+                @if (startPage > 1)
+                {
+                    <a href="@Model.BuildUrl(1)" 
+                       class="pagination-btn"
+                       hx-get="@Model.BuildUrl(1)"
+                       hx-target="#list-container"
+                       hx-swap="innerHTML"
+                       hx-push-url="true">1</a>
+                    @if (startPage > 2)
+                    {
+                        <span class="pagination-ellipsis">...</span>
+                    }
+                }
+                
+                @for (var i = startPage; i <= endPage; i++)
+                {
+                    <a href="@Model.BuildUrl(i)" 
+                       class="pagination-btn @(i == Model.Page ? "active" : "")"
+                       hx-get="@Model.BuildUrl(i)"
+                       hx-target="#list-container"
+                       hx-swap="innerHTML"
+                       hx-push-url="true"
+                       @(i == Model.Page ? "aria-current=page" : "")>@i</a>
+                }
+                
+                @if (endPage < Model.TotalPages)
+                {
+                    @if (endPage < Model.TotalPages - 1)
+                    {
+                        <span class="pagination-ellipsis">...</span>
+                    }
+                    <a href="@Model.BuildUrl(Model.TotalPages)" 
+                       class="pagination-btn"
+                       hx-get="@Model.BuildUrl(Model.TotalPages)"
+                       hx-target="#list-container"
+                       hx-swap="innerHTML"
+                       hx-push-url="true">@Model.TotalPages</a>
+                }
+                
+                <a href="@Model.BuildUrl(Model.Page + 1)" 
+                   class="pagination-btn @(Model.HasNext ? "" : "disabled")"
+                   hx-get="@Model.BuildUrl(Model.Page + 1)"
+                   hx-target="#list-container"
+                   hx-swap="innerHTML"
+                   hx-push-url="true"
+                   @(!Model.HasNext ? "aria-disabled=true tabindex=-1" : "")>
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 4L10 8L6 12"/>
+                    </svg>
+                </a>
+                
+                <a href="@Model.BuildUrl(Model.TotalPages)" 
+                   class="pagination-btn @(Model.Page == Model.TotalPages ? "disabled" : "")"
+                   hx-get="@Model.BuildUrl(Model.TotalPages)"
+                   hx-target="#list-container"
+                   hx-swap="innerHTML"
+                   hx-push-url="true"
+                   @(Model.Page == Model.TotalPages ? "aria-disabled=true tabindex=-1" : "")>
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 4L9 8L5 12M11 4L11 12"/>
+                    </svg>
+                </a>
+            </nav>
+        }
+    </div>
+}

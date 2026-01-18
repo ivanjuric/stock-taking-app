@@ -24,12 +24,10 @@ public sealed class ProductViewModel
     public DateTime CreatedAt { get; set; }
 }
 
-public sealed record ProductListViewModel(
-    List<ProductViewModel> Products,
-    string? SearchTerm,
-    string? CategoryFilter,
-    List<string> Categories
-)
+public sealed record ProductListViewModel
 {
-    public ProductListViewModel() : this([], null, null, []) { }
+    public required PagedResult<ProductViewModel> Products { get; init; }
+    public required string? CategoryFilter { get; init; }
+    public required List<string> Categories { get; init; }
+    public required PaginationViewModel Pagination { get; init; }
 }

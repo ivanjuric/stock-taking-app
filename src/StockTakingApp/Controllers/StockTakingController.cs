@@ -13,12 +13,93 @@ namespace StockTakingApp.Controllers;
 [Authorize]
 public sealed class StockTakingController(AppDbContext context, IStockTakingService stockTakingService) : Controller
 {
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(
+        string? search = null,
+        StockTakingStatus? status = null,
+        string? sortBy = null,
+        bool sortDesc = true,
+        int page = 1,
+        int pageSize = 20)
     {
         ViewData["Title"] = "Stock Taking";
 
-        var stockTakings = await stockTakingService.GetRecentStockTakingsAsync(50);
-        return View(stockTakings);
+        // Build query
+        var query = context.StockTakings
+            .Include(st => st.Location)
+            .Include(st => st.RequestedBy)
+            .Include(st => st.Assignments)
+            .ThenInclude(a => a.User)
+            .Include(st => st.Items)
+            .AsQueryable();
+
+        // Apply search filter
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var searchLower = search.ToLower();
+            query = query.Where(st =>
+                st.Location.Name.ToLower().Contains(searchLower) ||
+                st.Location.Code.ToLower().Contains(searchLower) ||
+                st.Assignments.Any(a => a.User.FullName.ToLower().Contains(searchLower)));
+        }
+
+        // Apply status filter
+        if (status.HasValue)
+        {
+            query = query.Where(st => st.Status == status.Value);
+        }
+
+        // Get total count before pagination
+        var totalItems = await query.CountAsync();
+
+        // Apply sorting
+        query = sortBy?.ToLower() switch
+        {
+            "location" => sortDesc
+                ? query.OrderByDescending(st => st.Location.Name)
+                : query.OrderBy(st => st.Location.Name),
+            "status" => sortDesc
+                ? query.OrderByDescending(st => st.Status)
+                : query.OrderBy(st => st.Status),
+            "progress" => sortDesc
+                ? query.OrderByDescending(st => st.Items.Count == 0 ? 0 : (double)st.Items.Count(i => i.CountedQuantity.HasValue) / st.Items.Count)
+                : query.OrderBy(st => st.Items.Count == 0 ? 0 : (double)st.Items.Count(i => i.CountedQuantity.HasValue) / st.Items.Count),
+            _ => sortDesc
+                ? query.OrderByDescending(st => st.CreatedAt)
+                : query.OrderBy(st => st.CreatedAt)
+        };
+
+        // Apply pagination
+        var stockTakings = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        var items = stockTakings.Select(st => st.ToListItemViewModel()).ToList();
+
+        var pagedResult = new PagedResult<StockTakingListItemViewModel>
+        {
+            Items = items,
+            Page = page,
+            PageSize = pageSize,
+            TotalItems = totalItems,
+            Search = search,
+            SortBy = sortBy ?? "created",
+            SortDesc = sortDesc
+        };
+
+        var extraParams = status.HasValue ? $"status={status}" : null;
+
+        var model = new StockTakingIndexViewModel
+        {
+            StockTakings = pagedResult,
+            StatusFilter = status,
+            Pagination = PaginationViewModel.FromPagedResult(pagedResult, "/stocktaking", extraParams)
+        };
+
+        if (Request.Headers.ContainsKey("HX-Request"))
+            return PartialView("_StockTakingList", model);
+
+        return View(model);
     }
 
     [HttpGet]

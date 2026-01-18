@@ -1,0 +1,107 @@
+@model ProductListViewModel
+@{
+    string SortUrl(string column)
+    {
+        var isCurrentSort = Model.Products.SortBy?.Equals(column, StringComparison.OrdinalIgnoreCase) == true;
+        var newDesc = isCurrentSort && !Model.Products.SortDesc;
+        var search = Model.Products.Search;
+        var category = Model.CategoryFilter;
+        
+        var url = $"/products?sortBy={column}&sortDesc={newDesc}";
+        if (!string.IsNullOrEmpty(search)) url += $"&search={Uri.EscapeDataString(search)}";
+        if (!string.IsNullOrEmpty(category)) url += $"&category={Uri.EscapeDataString(category)}";
+        return url;
+    }
+    
+    string SortClass(string column)
+    {
+        var isCurrentSort = Model.Products.SortBy?.Equals(column, StringComparison.OrdinalIgnoreCase) == true;
+        if (!isCurrentSort) return "sortable";
+        return Model.Products.SortDesc ? "sortable sorted desc" : "sortable sorted";
+    }
+}
+
+<div class="table-container">
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="@SortClass("sku")"
+                    hx-get="@SortUrl("sku")"
+                    hx-target="#list-container"
+                    hx-swap="innerHTML"
+                    hx-push-url="true">
+                    SKU
+                    <svg class="sort-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M8 4L8 12M8 4L5 7M8 4L11 7"/>
+                    </svg>
+                </th>
+                <th class="@SortClass("name")"
+                    hx-get="@SortUrl("name")"
+                    hx-target="#list-container"
+                    hx-swap="innerHTML"
+                    hx-push-url="true">
+                    Name
+                    <svg class="sort-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M8 4L8 12M8 4L5 7M8 4L11 7"/>
+                    </svg>
+                </th>
+                <th class="@SortClass("category")"
+                    hx-get="@SortUrl("category")"
+                    hx-target="#list-container"
+                    hx-swap="innerHTML"
+                    hx-push-url="true">
+                    Category
+                    <svg class="sort-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M8 4L8 12M8 4L5 7M8 4L11 7"/>
+                    </svg>
+                </th>
+                <th>Description</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var product in Model.Products.Items)
+            {
+                <tr id="product-@product.Id">
+                    <td><code>@product.Sku</code></td>
+                    <td class="font-medium">@product.Name</td>
+                    <td><span class="badge badge-primary">@product.Category</span></td>
+                    <td class="text-muted text-sm">@(product.Description ?? "-")</td>
+                    <td class="table-actions">
+                        <a asp-action="Edit" asp-route-id="@product.Id" class="btn btn-sm btn-secondary">Edit</a>
+                        <button type="button" class="btn btn-sm btn-danger"
+                                hx-delete="/products/delete/@product.Id"
+                                hx-target="#product-@product.Id"
+                                hx-swap="outerHTML"
+                                hx-confirm="Are you sure you want to delete this product?">
+                            Delete
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@if (Model.Products.TotalItems == 0)
+{
+    <div class="card-body">
+        <div class="empty-state">
+            <p>No products found</p>
+            @if (!string.IsNullOrEmpty(Model.Products.Search) || !string.IsNullOrEmpty(Model.CategoryFilter))
+            {
+                <a href="/products" class="btn btn-secondary mt-md">Clear Filters</a>
+            }
+            else
+            {
+                <a asp-action="Create" class="btn btn-primary mt-md">Add First Product</a>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <div class="card-footer">
+        @await Html.PartialAsync("~/Views/Shared/_Pagination.cshtml", Model.Pagination)
+    </div>
+}

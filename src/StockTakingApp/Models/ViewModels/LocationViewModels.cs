@@ -23,10 +23,8 @@ public sealed class LocationViewModel
     public int TotalStock { get; set; }
 }
 
-public sealed record LocationListViewModel(
-    List<LocationViewModel> Locations,
-    string? SearchTerm
-)
+public sealed record LocationListViewModel
 {
-    public LocationListViewModel() : this([], null) { }
+    public required PagedResult<LocationViewModel> Locations { get; init; }
+    public required PaginationViewModel Pagination { get; init; }
 }

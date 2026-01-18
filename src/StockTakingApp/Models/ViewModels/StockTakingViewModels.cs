@@ -3,6 +3,16 @@ using StockTakingApp.Models.Enums;
 
 namespace StockTakingApp.Models.ViewModels;
 
+/// <summary>
+/// View model for the StockTaking Index page with pagination, search, and filtering
+/// </summary>
+public sealed record StockTakingIndexViewModel
+{
+    public required PagedResult<StockTakingListItemViewModel> StockTakings { get; init; }
+    public required StockTakingStatus? StatusFilter { get; init; }
+    public required PaginationViewModel Pagination { get; init; }
+}
+
 // Mutable for form binding
 public sealed class StockTakingCreateViewModel
 {

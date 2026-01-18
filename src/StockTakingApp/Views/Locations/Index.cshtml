@@ -5,58 +5,45 @@
 
 <div class="card">
     <div class="card-header">
-        <form method="get" class="flex gap-sm">
-            <input type="text" name="search" value="@Model.SearchTerm" class="form-control" placeholder="Search locations..." style="width: 250px;" />
-            <button type="submit" class="btn btn-secondary">Search</button>
+        <form method="get" action="/locations" class="filter-bar"
+              hx-get="/locations"
+              hx-target="#list-container"
+              hx-swap="innerHTML"
+              hx-push-url="true">
+            <div class="search-input-wrapper">
+                <svg class="search-icon" width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="9" cy="9" r="6"/>
+                    <path d="M13 13L17 17"/>
+                </svg>
+                <input type="text" 
+                       name="search" 
+                       value="@Model.Locations.Search" 
+                       class="form-control" 
+                       placeholder="Search by name, code..."
+                       hx-get="/locations"
+                       hx-target="#list-container"
+                       hx-swap="innerHTML"
+                       hx-push-url="true"
+                       hx-trigger="input changed delay:300ms, search" />
+                @if (!string.IsNullOrEmpty(Model.Locations.Search))
+                {
+                    <button type="button" class="clear-search" onclick="this.previousElementSibling.value=''; this.previousElementSibling.dispatchEvent(new Event('input'));">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 4L12 12M12 4L4 12"/>
+                        </svg>
+                    </button>
+                }
+            </div>
+            <span class="htmx-indicator">
+                <span class="spinner"></span>
+            </span>
         </form>
         <a asp-action="Create" class="btn btn-primary">
             + Add Location
         </a>
     </div>
-    <div class="table-container">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Code</th>
-                    <th>Name</th>
-                    <th>Description</th>
-                    <th>Products</th>
-                    <th>Total Stock</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var location in Model.Locations)
-                {
-                    <tr id="location-@location.Id">
-                        <td><code>@location.Code</code></td>
-                        <td class="font-medium">@location.Name</td>
-                        <td class="text-muted text-sm">@(location.Description ?? "-")</td>
-                        <td>@location.ProductCount</td>
-                        <td>@location.TotalStock units</td>
-                        <td class="table-actions">
-                            <a asp-controller="Stock" asp-action="Index" asp-route-locationId="@location.Id" class="btn btn-sm btn-secondary">View Stock</a>
-                            <a asp-action="Edit" asp-route-id="@location.Id" class="btn btn-sm btn-secondary">Edit</a>
-                            <form asp-action="Delete" asp-route-id="@location.Id" method="post" style="display: inline;"
-                                  hx-delete="/locations/delete/@location.Id"
-                                  hx-target="#location-@location.Id"
-                                  hx-swap="outerHTML"
-                                  hx-confirm="Are you sure you want to delete this location?">
-                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                            </form>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+    
+    <div id="list-container">
+        @await Html.PartialAsync("_LocationList", Model)
     </div>
-    @if (!Model.Locations.Any())
-    {
-        <div class="card-body">
-            <div class="empty-state">
-                <p>No locations found</p>
-                <a asp-action="Create" class="btn btn-primary mt-md">Add First Location</a>
-            </div>
-        </div>
-    }
 </div>

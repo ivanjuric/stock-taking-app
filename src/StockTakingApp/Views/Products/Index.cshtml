@@ -5,64 +5,53 @@
 
 <div class="card">
     <div class="card-header">
-        <div class="flex items-center gap-md">
-            <form method="get" class="flex gap-sm">
-                <input type="text" name="search" value="@Model.SearchTerm" class="form-control" placeholder="Search products..." style="width: 250px;" />
-                <select name="category" class="form-control" style="width: 180px;" onchange="this.form.submit()">
-                    <option value="">All Categories</option>
-                    @foreach (var cat in Model.Categories)
-                    {
-                        <option value="@cat" selected="@(Model.CategoryFilter == cat)">@cat</option>
-                    }
-                </select>
-                <button type="submit" class="btn btn-secondary">Search</button>
-            </form>
-        </div>
+        <form method="get" action="/products" class="filter-bar"
+              hx-get="/products"
+              hx-target="#list-container"
+              hx-swap="innerHTML"
+              hx-push-url="true"
+              hx-trigger="submit, change from:select">
+            <div class="search-input-wrapper">
+                <svg class="search-icon" width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="9" cy="9" r="6"/>
+                    <path d="M13 13L17 17"/>
+                </svg>
+                <input type="text" 
+                       name="search" 
+                       value="@Model.Products.Search" 
+                       class="form-control" 
+                       placeholder="Search by name, SKU..."
+                       hx-get="/products"
+                       hx-target="#list-container"
+                       hx-swap="innerHTML"
+                       hx-push-url="true"
+                       hx-trigger="input changed delay:300ms, search" />
+                @if (!string.IsNullOrEmpty(Model.Products.Search))
+                {
+                    <button type="button" class="clear-search" onclick="this.previousElementSibling.value=''; this.previousElementSibling.dispatchEvent(new Event('input'));">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 4L12 12M12 4L4 12"/>
+                        </svg>
+                    </button>
+                }
+            </div>
+            <select name="category" class="form-control">
+                <option value="">All Categories</option>
+                @foreach (var cat in Model.Categories)
+                {
+                    <option value="@cat" selected="@(Model.CategoryFilter == cat)">@cat</option>
+                }
+            </select>
+            <span class="htmx-indicator">
+                <span class="spinner"></span>
+            </span>
+        </form>
         <a asp-action="Create" class="btn btn-primary">
             + Add Product
         </a>
     </div>
-    <div class="table-container">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>SKU</th>
-                    <th>Name</th>
-                    <th>Category</th>
-                    <th>Description</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var product in Model.Products)
-                {
-                    <tr id="product-@product.Id">
-                        <td><code>@product.Sku</code></td>
-                        <td class="font-medium">@product.Name</td>
-                        <td><span class="badge badge-primary">@product.Category</span></td>
-                        <td class="text-muted text-sm">@(product.Description ?? "-")</td>
-                        <td class="table-actions">
-                            <a asp-action="Edit" asp-route-id="@product.Id" class="btn btn-sm btn-secondary">Edit</a>
-                            <form asp-action="Delete" asp-route-id="@product.Id" method="post" style="display: inline;"
-                                  hx-delete="/products/delete/@product.Id"
-                                  hx-target="#product-@product.Id"
-                                  hx-swap="outerHTML"
-                                  hx-confirm="Are you sure you want to delete this product?">
-                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                            </form>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+    
+    <div id="list-container">
+        @await Html.PartialAsync("_ProductList", Model)
     </div>
-    @if (!Model.Products.Any())
-    {
-        <div class="card-body">
-            <div class="empty-state">
-                <p>No products found</p>
-                <a asp-action="Create" class="btn btn-primary mt-md">Add First Product</a>
-            </div>
-        </div>
-    }
 </div>

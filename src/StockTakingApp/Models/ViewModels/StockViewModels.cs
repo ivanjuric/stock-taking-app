@@ -14,14 +14,13 @@ public sealed record StockViewModel
     public DateTime UpdatedAt { get; init; }
 }
 
-public sealed record StockListViewModel(
-    List<StockViewModel> Stocks,
-    int? LocationId,
-    string? LocationName,
-    List<LocationViewModel> Locations
-)
+public sealed record StockListViewModel
 {
-    public StockListViewModel() : this([], null, null, []) { }
+    public required PagedResult<StockViewModel> Stocks { get; init; }
+    public required int? LocationId { get; init; }
+    public required string? LocationName { get; init; }
+    public required List<LocationViewModel> Locations { get; init; }
+    public required PaginationViewModel Pagination { get; init; }
 }
 
 public sealed record StockUpdateViewModel(int Id, int Quantity);

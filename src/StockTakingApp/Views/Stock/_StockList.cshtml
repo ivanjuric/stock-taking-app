@@ -1,0 +1,122 @@
+@model StockListViewModel
+@{
+    string SortUrl(string column)
+    {
+        var isCurrentSort = Model.Stocks.SortBy?.Equals(column, StringComparison.OrdinalIgnoreCase) == true;
+        var newDesc = isCurrentSort && !Model.Stocks.SortDesc;
+        var search = Model.Stocks.Search;
+        
+        var url = $"/stock?sortBy={column}&sortDesc={newDesc}";
+        if (!string.IsNullOrEmpty(search)) url += $"&search={Uri.EscapeDataString(search)}";
+        if (Model.LocationId.HasValue) url += $"&locationId={Model.LocationId}";
+        return url;
+    }
+    
+    string SortClass(string column)
+    {
+        var isCurrentSort = Model.Stocks.SortBy?.Equals(column, StringComparison.OrdinalIgnoreCase) == true;
+        if (!isCurrentSort) return "sortable";
+        return Model.Stocks.SortDesc ? "sortable sorted desc" : "sortable sorted";
+    }
+}
+
+<div class="table-container">
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="@SortClass("location")"
+                    hx-get="@SortUrl("location")"
+                    hx-target="#list-container"
+                    hx-swap="innerHTML"
+                    hx-push-url="true">
+                    Location
+                    <svg class="sort-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M8 4L8 12M8 4L5 7M8 4L11 7"/>
+                    </svg>
+                </th>
+                <th class="@SortClass("sku")"
+                    hx-get="@SortUrl("sku")"
+                    hx-target="#list-container"
+                    hx-swap="innerHTML"
+                    hx-push-url="true">
+                    SKU
+                    <svg class="sort-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M8 4L8 12M8 4L5 7M8 4L11 7"/>
+                    </svg>
+                </th>
+                <th class="@SortClass("product")"
+                    hx-get="@SortUrl("product")"
+                    hx-target="#list-container"
+                    hx-swap="innerHTML"
+                    hx-push-url="true">
+                    Product
+                    <svg class="sort-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M8 4L8 12M8 4L5 7M8 4L11 7"/>
+                    </svg>
+                </th>
+                <th class="@SortClass("category")"
+                    hx-get="@SortUrl("category")"
+                    hx-target="#list-container"
+                    hx-swap="innerHTML"
+                    hx-push-url="true">
+                    Category
+                    <svg class="sort-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M8 4L8 12M8 4L5 7M8 4L11 7"/>
+                    </svg>
+                </th>
+                <th class="@SortClass("quantity")"
+                    hx-get="@SortUrl("quantity")"
+                    hx-target="#list-container"
+                    hx-swap="innerHTML"
+                    hx-push-url="true">
+                    Quantity
+                    <svg class="sort-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M8 4L8 12M8 4L5 7M8 4L11 7"/>
+                    </svg>
+                </th>
+                <th class="@SortClass("updated")"
+                    hx-get="@SortUrl("updated")"
+                    hx-target="#list-container"
+                    hx-swap="innerHTML"
+                    hx-push-url="true">
+                    Last Updated
+                    <svg class="sort-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M8 4L8 12M8 4L5 7M8 4L11 7"/>
+                    </svg>
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var stock in Model.Stocks.Items)
+            {
+                <tr id="stock-@stock.Id">
+                    @await Html.PartialAsync("_StockRow", stock)
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@if (Model.Stocks.TotalItems == 0)
+{
+    <div class="card-body">
+        <div class="empty-state">
+            <p>No stock entries found</p>
+            @if (!string.IsNullOrEmpty(Model.Stocks.Search) || Model.LocationId.HasValue)
+            {
+                <a href="/stock" class="btn btn-secondary mt-md">Clear Filters</a>
+            }
+            else
+            {
+                <p class="text-sm text-muted mt-sm">Stock is automatically created when products and locations exist.</p>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <div class="card-footer">
+        @await Html.PartialAsync("~/Views/Shared/_Pagination.cshtml", Model.Pagination)
+    </div>
+}
