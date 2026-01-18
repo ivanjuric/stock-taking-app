@@ -6,6 +6,9 @@ services:
     name: stock-taking-app
     runtime: docker
     plan: free
+    region: frankfurt
+    branch: master
+    autoDeploy: true
     healthCheckPath: /health
     envVars:
       - key: ASPNETCORE_ENVIRONMENT
