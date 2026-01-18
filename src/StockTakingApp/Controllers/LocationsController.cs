@@ -4,24 +4,18 @@ using Microsoft.EntityFrameworkCore;
 using StockTakingApp.Data;
 using StockTakingApp.Models.Entities;
 using StockTakingApp.Models.ViewModels;
+using StockTakingApp.Mapping;
 
 namespace StockTakingApp.Controllers;
 
 [Authorize(Roles = "Admin")]
-public class LocationsController : Controller
+public sealed class LocationsController(AppDbContext context) : Controller
 {
-    private readonly AppDbContext _context;
-
-    public LocationsController(AppDbContext context)
-    {
-        _context = context;
-    }
-
     public async Task<IActionResult> Index(string? search)
     {
         ViewData["Title"] = "Locations";
 
-        var query = _context.Locations.AsQueryable();
+        var query = context.Locations.AsQueryable();
 
         if (!string.IsNullOrEmpty(search))
         {
@@ -65,7 +59,7 @@ public class LocationsController : Controller
         if (!ModelState.IsValid)
             return View(model);
 
-        if (await _context.Locations.AnyAsync(l => l.Code == model.Code))
+        if (await context.Locations.AnyAsync(l => l.Code == model.Code))
         {
             ModelState.AddModelError("Code", "A location with this code already exists");
             return View(model);
@@ -78,8 +72,8 @@ public class LocationsController : Controller
             Description = model.Description
         };
 
-        _context.Locations.Add(location);
-        await _context.SaveChangesAsync();
+        context.Locations.Add(location);
+        await context.SaveChangesAsync();
 
         return RedirectToAction(nameof(Index));
     }
@@ -89,19 +83,11 @@ public class LocationsController : Controller
     {
         ViewData["Title"] = "Edit Location";
 
-        var location = await _context.Locations.FindAsync(id);
-        if (location == null)
+        var location = await context.Locations.FindAsync(id);
+        if (location is null)
             return NotFound();
 
-        var model = new LocationViewModel
-        {
-            Id = location.Id,
-            Code = location.Code,
-            Name = location.Name,
-            Description = location.Description
-        };
-
-        return View(model);
+        return View(location.ToViewModel());
     }
 
     [HttpPost]
@@ -114,21 +100,18 @@ public class LocationsController : Controller
         if (!ModelState.IsValid)
             return View(model);
 
-        var location = await _context.Locations.FindAsync(id);
-        if (location == null)
+        var location = await context.Locations.FindAsync(id);
+        if (location is null)
             return NotFound();
 
-        if (await _context.Locations.AnyAsync(l => l.Code == model.Code && l.Id != id))
+        if (await context.Locations.AnyAsync(l => l.Code == model.Code && l.Id != id))
         {
             ModelState.AddModelError("Code", "A location with this code already exists");
             return View(model);
         }
 
-        location.Code = model.Code;
-        location.Name = model.Name;
-        location.Description = model.Description;
-
-        await _context.SaveChangesAsync();
+        location.UpdateFromViewModel(model);
+        await context.SaveChangesAsync();
 
         return RedirectToAction(nameof(Index));
     }
@@ -137,12 +120,12 @@ public class LocationsController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(int id)
     {
-        var location = await _context.Locations.FindAsync(id);
-        if (location == null)
+        var location = await context.Locations.FindAsync(id);
+        if (location is null)
             return NotFound();
 
-        _context.Locations.Remove(location);
-        await _context.SaveChangesAsync();
+        context.Locations.Remove(location);
+        await context.SaveChangesAsync();
 
         if (Request.Headers.ContainsKey("HX-Request"))
             return Ok();

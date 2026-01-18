@@ -3,24 +3,18 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StockTakingApp.Data;
 using StockTakingApp.Models.ViewModels;
+using StockTakingApp.Mapping;
 
 namespace StockTakingApp.Controllers;
 
 [Authorize(Roles = "Admin")]
-public class StockController : Controller
+public sealed class StockController(AppDbContext context) : Controller
 {
-    private readonly AppDbContext _context;
-
-    public StockController(AppDbContext context)
-    {
-        _context = context;
-    }
-
     public async Task<IActionResult> Index(int? locationId)
     {
         ViewData["Title"] = "Stock Levels";
 
-        var locations = await _context.Locations
+        var locations = await context.Locations
             .OrderBy(l => l.Code)
             .Select(l => new LocationViewModel
             {
@@ -30,7 +24,7 @@ public class StockController : Controller
             })
             .ToListAsync();
 
-        var query = _context.Stocks
+        var query = context.Stocks
             .Include(s => s.Product)
             .Include(s => s.Location)
             .AsQueryable();
@@ -43,19 +37,7 @@ public class StockController : Controller
         var stocks = await query
             .OrderBy(s => s.Location.Code)
             .ThenBy(s => s.Product.Name)
-            .Select(s => new StockViewModel
-            {
-                Id = s.Id,
-                ProductId = s.ProductId,
-                ProductSku = s.Product.Sku,
-                ProductName = s.Product.Name,
-                ProductCategory = s.Product.Category,
-                LocationId = s.LocationId,
-                LocationCode = s.Location.Code,
-                LocationName = s.Location.Name,
-                Quantity = s.Quantity,
-                UpdatedAt = s.UpdatedAt
-            })
+            .Select(s => s.ToViewModel())
             .ToListAsync();
 
         var model = new StockListViewModel
@@ -75,28 +57,21 @@ public class StockController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Update(int id, int quantity)
     {
-        var stock = await _context.Stocks
+        var stock = await context.Stocks
             .Include(s => s.Product)
+            .Include(s => s.Location)
             .FirstOrDefaultAsync(s => s.Id == id);
 
-        if (stock == null)
+        if (stock is null)
             return NotFound();
 
         stock.Quantity = quantity;
         stock.UpdatedAt = DateTime.UtcNow;
-        await _context.SaveChangesAsync();
+        await context.SaveChangesAsync();
 
         if (Request.Headers.ContainsKey("HX-Request"))
         {
-            return PartialView("_StockRow", new StockViewModel
-            {
-                Id = stock.Id,
-                ProductId = stock.ProductId,
-                ProductSku = stock.Product.Sku,
-                ProductName = stock.Product.Name,
-                Quantity = stock.Quantity,
-                UpdatedAt = stock.UpdatedAt
-            });
+            return PartialView("_StockRow", stock.ToViewModel());
         }
 
         return RedirectToAction(nameof(Index));

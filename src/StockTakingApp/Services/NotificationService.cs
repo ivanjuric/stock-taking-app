@@ -5,18 +5,14 @@ using StockTakingApp.Models.Enums;
 
 namespace StockTakingApp.Services;
 
-public class NotificationService : INotificationService
+public sealed class NotificationService(AppDbContext context, INotificationHub hub) : INotificationService
 {
-    private readonly AppDbContext _context;
-    private readonly INotificationHub _hub;
-
-    public NotificationService(AppDbContext context, INotificationHub hub)
-    {
-        _context = context;
-        _hub = hub;
-    }
-
-    public async Task<Notification> CreateNotificationAsync(int userId, string title, string message, NotificationType type, string? link = null)
+    public async Task<Notification> CreateNotificationAsync(
+        int userId, 
+        string title, 
+        string message, 
+        NotificationType type, 
+        string? link = null)
     {
         var notification = new Notification
         {
@@ -29,16 +25,21 @@ public class NotificationService : INotificationService
             CreatedAt = DateTime.UtcNow
         };
 
-        _context.Notifications.Add(notification);
-        await _context.SaveChangesAsync();
+        context.Notifications.Add(notification);
+        await context.SaveChangesAsync();
 
         // Push real-time notification
-        await _hub.SendToUserAsync(userId, notification);
+        await hub.SendToUserAsync(userId, notification);
 
         return notification;
     }
 
-    public async Task CreateNotificationsForUsersAsync(IEnumerable<int> userIds, string title, string message, NotificationType type, string? link = null)
+    public async Task CreateNotificationsForUsersAsync(
+        IEnumerable<int> userIds, 
+        string title, 
+        string message, 
+        NotificationType type, 
+        string? link = null)
     {
         var userIdList = userIds.ToList();
         var notifications = userIdList.Select(userId => new Notification
@@ -52,47 +53,43 @@ public class NotificationService : INotificationService
             CreatedAt = DateTime.UtcNow
         }).ToList();
 
-        _context.Notifications.AddRange(notifications);
-        await _context.SaveChangesAsync();
+        context.Notifications.AddRange(notifications);
+        await context.SaveChangesAsync();
 
         // Push real-time notifications
         foreach (var notification in notifications)
         {
-            await _hub.SendToUserAsync(notification.UserId, notification);
+            await hub.SendToUserAsync(notification.UserId, notification);
         }
     }
 
-    public async Task<List<Notification>> GetUserNotificationsAsync(int userId, int take = 20)
-    {
-        return await _context.Notifications
+    public async Task<List<Notification>> GetUserNotificationsAsync(int userId, int take = 20) =>
+        await context.Notifications
             .Where(n => n.UserId == userId)
             .OrderByDescending(n => n.CreatedAt)
             .Take(take)
             .ToListAsync();
-    }
 
-    public async Task<int> GetUnreadCountAsync(int userId)
-    {
-        return await _context.Notifications
+    public async Task<int> GetUnreadCountAsync(int userId) =>
+        await context.Notifications
             .Where(n => n.UserId == userId && !n.IsRead)
             .CountAsync();
-    }
 
     public async Task MarkAsReadAsync(int notificationId, int userId)
     {
-        var notification = await _context.Notifications
+        var notification = await context.Notifications
             .FirstOrDefaultAsync(n => n.Id == notificationId && n.UserId == userId);
 
-        if (notification != null)
+        if (notification is not null)
         {
             notification.IsRead = true;
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
         }
     }
 
     public async Task MarkAllAsReadAsync(int userId)
     {
-        var unreadNotifications = await _context.Notifications
+        var unreadNotifications = await context.Notifications
             .Where(n => n.UserId == userId && !n.IsRead)
             .ToListAsync();
 
@@ -101,6 +98,6 @@ public class NotificationService : INotificationService
             notification.IsRead = true;
         }
 
-        await _context.SaveChangesAsync();
+        await context.SaveChangesAsync();
     }
 }

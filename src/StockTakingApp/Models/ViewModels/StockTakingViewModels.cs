@@ -3,7 +3,8 @@ using StockTakingApp.Models.Enums;
 
 namespace StockTakingApp.Models.ViewModels;
 
-public class StockTakingCreateViewModel
+// Mutable for form binding
+public sealed class StockTakingCreateViewModel
 {
     [Required(ErrorMessage = "Location is required")]
     public int LocationId { get; set; }
@@ -19,53 +20,58 @@ public class StockTakingCreateViewModel
     public List<WorkerViewModel> AvailableWorkers { get; set; } = [];
 }
 
-public class WorkerViewModel
+public sealed record WorkerViewModel
 {
-    public int Id { get; set; }
-    public string FullName { get; set; } = string.Empty;
-    public string Email { get; set; } = string.Empty;
+    public int Id { get; init; }
+    public string FullName { get; init; } = string.Empty;
+    public string Email { get; init; } = string.Empty;
 }
 
-public class StockTakingDetailsViewModel
+public sealed record StockTakingDetailsViewModel
 {
-    public int Id { get; set; }
-    public string LocationName { get; set; } = string.Empty;
-    public string LocationCode { get; set; } = string.Empty;
-    public StockTakingStatus Status { get; set; }
-    public string StatusDisplay { get; set; } = string.Empty;
-    public string StatusClass { get; set; } = string.Empty;
-    public string RequestedByName { get; set; } = string.Empty;
-    public List<string> AssignedWorkers { get; set; } = [];
-    public DateTime CreatedAt { get; set; }
-    public DateTime? StartedAt { get; set; }
-    public DateTime? CompletedAt { get; set; }
-    public string? Notes { get; set; }
-    public List<StockTakingItemViewModel> Items { get; set; } = [];
-    public int TotalItems { get; set; }
-    public int CountedItems { get; set; }
-    public int DiscrepancyCount { get; set; }
-    public decimal ProgressPercent => TotalItems > 0 ? Math.Round((decimal)CountedItems / TotalItems * 100, 0) : 0;
-    public bool CanStart { get; set; }
-    public bool CanPerform { get; set; }
-    public bool CanReview { get; set; }
-    public bool CanAcceptCounts { get; set; }
+    public int Id { get; init; }
+    public string LocationName { get; init; } = string.Empty;
+    public string LocationCode { get; init; } = string.Empty;
+    public StockTakingStatus Status { get; init; }
+    public string StatusDisplay { get; init; } = string.Empty;
+    public string StatusClass { get; init; } = string.Empty;
+    public string RequestedByName { get; init; } = string.Empty;
+    public List<string> AssignedWorkers { get; init; } = [];
+    public DateTime CreatedAt { get; init; }
+    public DateTime? StartedAt { get; init; }
+    public DateTime? CompletedAt { get; init; }
+    public string? Notes { get; init; }
+    public List<StockTakingItemViewModel> Items { get; init; } = [];
+    public int TotalItems { get; init; }
+    public int CountedItems { get; init; }
+    public int DiscrepancyCount { get; init; }
+    
+    public decimal ProgressPercent => TotalItems > 0 
+        ? Math.Round((decimal)CountedItems / TotalItems * 100, 0) 
+        : 0;
+    
+    public bool CanStart { get; init; }
+    public bool CanPerform { get; init; }
+    public bool CanReview { get; init; }
+    public bool CanAcceptCounts { get; init; }
 }
 
-public class StockTakingItemViewModel
+public sealed record StockTakingItemViewModel
 {
-    public int Id { get; set; }
-    public int ProductId { get; set; }
-    public string ProductSku { get; set; } = string.Empty;
-    public string ProductName { get; set; } = string.Empty;
-    public string ProductCategory { get; set; } = string.Empty;
-    public int ExpectedQuantity { get; set; }
-    public int? CountedQuantity { get; set; }
-    public DateTime? CountedAt { get; set; }
-    public string? CountedByName { get; set; }
-    public string? Notes { get; set; }
-    public bool IsCounted { get; set; }
-    public int? Variance { get; set; }
-    public decimal? VariancePercent { get; set; }
+    public int Id { get; init; }
+    public int ProductId { get; init; }
+    public string ProductSku { get; init; } = string.Empty;
+    public string ProductName { get; init; } = string.Empty;
+    public string ProductCategory { get; init; } = string.Empty;
+    public int ExpectedQuantity { get; init; }
+    public int? CountedQuantity { get; init; }
+    public DateTime? CountedAt { get; init; }
+    public string? CountedByName { get; init; }
+    public string? Notes { get; init; }
+    public bool IsCounted { get; init; }
+    public int? Variance { get; init; }
+    public decimal? VariancePercent { get; init; }
+    
     public string VarianceClass => Variance switch
     {
         null => "",
@@ -75,19 +81,23 @@ public class StockTakingItemViewModel
     };
 }
 
-public class StockTakingPerformViewModel
+public sealed record StockTakingPerformViewModel
 {
-    public int Id { get; set; }
-    public string LocationName { get; set; } = string.Empty;
-    public string LocationCode { get; set; } = string.Empty;
-    public StockTakingStatus Status { get; set; }
-    public List<StockTakingItemViewModel> Items { get; set; } = [];
-    public int TotalItems { get; set; }
-    public int CountedItems { get; set; }
-    public decimal ProgressPercent => TotalItems > 0 ? Math.Round((decimal)CountedItems / TotalItems * 100, 0) : 0;
+    public int Id { get; init; }
+    public string LocationName { get; init; } = string.Empty;
+    public string LocationCode { get; init; } = string.Empty;
+    public StockTakingStatus Status { get; init; }
+    public List<StockTakingItemViewModel> Items { get; init; } = [];
+    public int TotalItems { get; init; }
+    public int CountedItems { get; init; }
+    
+    public decimal ProgressPercent => TotalItems > 0 
+        ? Math.Round((decimal)CountedItems / TotalItems * 100, 0) 
+        : 0;
 }
 
-public class CountItemViewModel
+// Mutable for form binding
+public sealed class CountItemViewModel
 {
     public int ItemId { get; set; }
 
@@ -98,16 +108,16 @@ public class CountItemViewModel
     public string? Notes { get; set; }
 }
 
-public class StockTakingReviewViewModel
+public sealed record StockTakingReviewViewModel
 {
-    public int Id { get; set; }
-    public string LocationName { get; set; } = string.Empty;
-    public string LocationCode { get; set; } = string.Empty;
-    public DateTime? CompletedAt { get; set; }
-    public List<string> AssignedWorkers { get; set; } = [];
-    public List<StockTakingItemViewModel> Items { get; set; } = [];
-    public int TotalItems { get; set; }
-    public int MatchedItems { get; set; }
-    public int DiscrepancyCount { get; set; }
-    public bool HasAcceptedCounts { get; set; }
+    public int Id { get; init; }
+    public string LocationName { get; init; } = string.Empty;
+    public string LocationCode { get; init; } = string.Empty;
+    public DateTime? CompletedAt { get; init; }
+    public List<string> AssignedWorkers { get; init; } = [];
+    public List<StockTakingItemViewModel> Items { get; init; } = [];
+    public int TotalItems { get; init; }
+    public int MatchedItems { get; init; }
+    public int DiscrepancyCount { get; init; }
+    public bool HasAcceptedCounts { get; init; }
 }

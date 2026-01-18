@@ -2,7 +2,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace StockTakingApp.Models.ViewModels;
 
-public class ProductViewModel
+// Mutable for form binding
+public sealed class ProductViewModel
 {
     public int Id { get; set; }
 
@@ -23,10 +24,12 @@ public class ProductViewModel
     public DateTime CreatedAt { get; set; }
 }
 
-public class ProductListViewModel
+public sealed record ProductListViewModel(
+    List<ProductViewModel> Products,
+    string? SearchTerm,
+    string? CategoryFilter,
+    List<string> Categories
+)
 {
-    public List<ProductViewModel> Products { get; set; } = [];
-    public string? SearchTerm { get; set; }
-    public string? CategoryFilter { get; set; }
-    public List<string> Categories { get; set; } = [];
+    public ProductListViewModel() : this([], null, null, []) { }
 }

@@ -5,22 +5,16 @@ using StockTakingApp.Models.Entities;
 
 namespace StockTakingApp.Services;
 
-public class AuthService : IAuthService
+public sealed class AuthService(AppDbContext context) : IAuthService
 {
-    private readonly AppDbContext _context;
     private const int SaltSize = 16;
     private const int HashSize = 32;
     private const int Iterations = 100000;
 
-    public AuthService(AppDbContext context)
-    {
-        _context = context;
-    }
-
     public async Task<User?> ValidateUserAsync(string email, string password)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
-        if (user == null)
+        var user = await context.Users.FirstOrDefaultAsync(u => u.Email == email);
+        if (user is null)
             return null;
 
         return VerifyPassword(password, user.PasswordHash) ? user : null;
@@ -28,15 +22,15 @@ public class AuthService : IAuthService
 
     public string HashPassword(string password)
     {
-        byte[] salt = RandomNumberGenerator.GetBytes(SaltSize);
-        byte[] hash = Rfc2898DeriveBytes.Pbkdf2(
+        var salt = RandomNumberGenerator.GetBytes(SaltSize);
+        var hash = Rfc2898DeriveBytes.Pbkdf2(
             password,
             salt,
             Iterations,
             HashAlgorithmName.SHA256,
             HashSize);
 
-        byte[] hashBytes = new byte[SaltSize + HashSize];
+        var hashBytes = new byte[SaltSize + HashSize];
         Array.Copy(salt, 0, hashBytes, 0, SaltSize);
         Array.Copy(hash, 0, hashBytes, SaltSize, HashSize);
 
@@ -45,19 +39,19 @@ public class AuthService : IAuthService
 
     public bool VerifyPassword(string password, string hashedPassword)
     {
-        byte[] hashBytes = Convert.FromBase64String(hashedPassword);
+        var hashBytes = Convert.FromBase64String(hashedPassword);
 
-        byte[] salt = new byte[SaltSize];
+        var salt = new byte[SaltSize];
         Array.Copy(hashBytes, 0, salt, 0, SaltSize);
 
-        byte[] hash = Rfc2898DeriveBytes.Pbkdf2(
+        var hash = Rfc2898DeriveBytes.Pbkdf2(
             password,
             salt,
             Iterations,
             HashAlgorithmName.SHA256,
             HashSize);
 
-        for (int i = 0; i < HashSize; i++)
+        for (var i = 0; i < HashSize; i++)
         {
             if (hashBytes[i + SaltSize] != hash[i])
                 return false;

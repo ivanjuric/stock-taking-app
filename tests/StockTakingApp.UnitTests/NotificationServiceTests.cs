@@ -8,7 +8,7 @@ using StockTakingApp.Services;
 
 namespace StockTakingApp.UnitTests;
 
-public class NotificationServiceTests : IDisposable
+public sealed class NotificationServiceTests : IDisposable
 {
     private readonly AppDbContext _context;
     private readonly Mock<INotificationHub> _hubMock;
@@ -44,11 +44,11 @@ public class NotificationServiceTests : IDisposable
     public async Task CreateNotificationAsync_ShouldCreateAndPersistNotification()
     {
         // Arrange
-        var userId = 1;
-        var title = "Test Title";
-        var message = "Test Message";
-        var type = NotificationType.StockTakingRequested;
-        var link = "/test/link";
+        const int userId = 1;
+        const string title = "Test Title";
+        const string message = "Test Message";
+        const NotificationType type = NotificationType.StockTakingRequested;
+        const string link = "/test/link";
 
         // Act
         var result = await _service.CreateNotificationAsync(userId, title, message, type, link);
@@ -71,7 +71,7 @@ public class NotificationServiceTests : IDisposable
     public async Task CreateNotificationAsync_ShouldPushToHub()
     {
         // Arrange
-        var userId = 1;
+        const int userId = 1;
 
         // Act
         await _service.CreateNotificationAsync(userId, "Title", "Message", NotificationType.StockTakingStarted);
@@ -107,7 +107,7 @@ public class NotificationServiceTests : IDisposable
     public async Task GetUserNotificationsAsync_ShouldReturnOrderedNotifications()
     {
         // Arrange
-        for (int i = 1; i <= 5; i++)
+        for (var i = 1; i <= 5; i++)
         {
             await _service.CreateNotificationAsync(1, $"Title {i}", $"Message {i}", NotificationType.StockTakingStarted);
             await Task.Delay(10);
@@ -125,7 +125,7 @@ public class NotificationServiceTests : IDisposable
     public async Task GetUserNotificationsAsync_ShouldRespectTakeLimit()
     {
         // Arrange
-        for (int i = 1; i <= 10; i++)
+        for (var i = 1; i <= 10; i++)
         {
             await _service.CreateNotificationAsync(1, $"Title {i}", $"Message {i}", NotificationType.StockTakingStarted);
         }

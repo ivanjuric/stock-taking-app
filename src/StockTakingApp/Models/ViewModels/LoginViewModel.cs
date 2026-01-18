@@ -2,7 +2,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace StockTakingApp.Models.ViewModels;
 
-public class LoginViewModel
+// Mutable for form binding
+public sealed class LoginViewModel
 {
     [Required(ErrorMessage = "Email is required")]
     [EmailAddress(ErrorMessage = "Invalid email address")]

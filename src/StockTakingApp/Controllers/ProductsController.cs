@@ -4,24 +4,18 @@ using Microsoft.EntityFrameworkCore;
 using StockTakingApp.Data;
 using StockTakingApp.Models.Entities;
 using StockTakingApp.Models.ViewModels;
+using StockTakingApp.Mapping;
 
 namespace StockTakingApp.Controllers;
 
 [Authorize(Roles = "Admin")]
-public class ProductsController : Controller
+public sealed class ProductsController(AppDbContext context) : Controller
 {
-    private readonly AppDbContext _context;
-
-    public ProductsController(AppDbContext context)
-    {
-        _context = context;
-    }
-
     public async Task<IActionResult> Index(string? search, string? category)
     {
         ViewData["Title"] = "Products";
 
-        var query = _context.Products.AsQueryable();
+        var query = context.Products.AsQueryable();
 
         if (!string.IsNullOrEmpty(search))
         {
@@ -35,18 +29,10 @@ public class ProductsController : Controller
 
         var products = await query
             .OrderBy(p => p.Name)
-            .Select(p => new ProductViewModel
-            {
-                Id = p.Id,
-                Sku = p.Sku,
-                Name = p.Name,
-                Description = p.Description,
-                Category = p.Category,
-                CreatedAt = p.CreatedAt
-            })
+            .Select(p => p.ToViewModel())
             .ToListAsync();
 
-        var categories = await _context.Products
+        var categories = await context.Products
             .Select(p => p.Category)
             .Distinct()
             .OrderBy(c => c)
@@ -77,7 +63,7 @@ public class ProductsController : Controller
         if (!ModelState.IsValid)
             return View(model);
 
-        if (await _context.Products.AnyAsync(p => p.Sku == model.Sku))
+        if (await context.Products.AnyAsync(p => p.Sku == model.Sku))
         {
             ModelState.AddModelError("Sku", "A product with this SKU already exists");
             return View(model);
@@ -91,8 +77,8 @@ public class ProductsController : Controller
             Category = model.Category
         };
 
-        _context.Products.Add(product);
-        await _context.SaveChangesAsync();
+        context.Products.Add(product);
+        await context.SaveChangesAsync();
 
         return RedirectToAction(nameof(Index));
     }
@@ -102,20 +88,11 @@ public class ProductsController : Controller
     {
         ViewData["Title"] = "Edit Product";
 
-        var product = await _context.Products.FindAsync(id);
-        if (product == null)
+        var product = await context.Products.FindAsync(id);
+        if (product is null)
             return NotFound();
 
-        var model = new ProductViewModel
-        {
-            Id = product.Id,
-            Sku = product.Sku,
-            Name = product.Name,
-            Description = product.Description,
-            Category = product.Category
-        };
-
-        return View(model);
+        return View(product.ToViewModel());
     }
 
     [HttpPost]
@@ -128,22 +105,18 @@ public class ProductsController : Controller
         if (!ModelState.IsValid)
             return View(model);
 
-        var product = await _context.Products.FindAsync(id);
-        if (product == null)
+        var product = await context.Products.FindAsync(id);
+        if (product is null)
             return NotFound();
 
-        if (await _context.Products.AnyAsync(p => p.Sku == model.Sku && p.Id != id))
+        if (await context.Products.AnyAsync(p => p.Sku == model.Sku && p.Id != id))
         {
             ModelState.AddModelError("Sku", "A product with this SKU already exists");
             return View(model);
         }
 
-        product.Sku = model.Sku;
-        product.Name = model.Name;
-        product.Description = model.Description;
-        product.Category = model.Category;
-
-        await _context.SaveChangesAsync();
+        product.UpdateFromViewModel(model);
+        await context.SaveChangesAsync();
 
         return RedirectToAction(nameof(Index));
     }
@@ -152,12 +125,12 @@ public class ProductsController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(int id)
     {
-        var product = await _context.Products.FindAsync(id);
-        if (product == null)
+        var product = await context.Products.FindAsync(id);
+        if (product is null)
             return NotFound();
 
-        _context.Products.Remove(product);
-        await _context.SaveChangesAsync();
+        context.Products.Remove(product);
+        await context.SaveChangesAsync();
 
         if (Request.Headers.ContainsKey("HX-Request"))
             return Ok();

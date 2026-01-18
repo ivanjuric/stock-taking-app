@@ -2,7 +2,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace StockTakingApp.Models.ViewModels;
 
-public class LocationViewModel
+// Mutable for form binding
+public sealed class LocationViewModel
 {
     public int Id { get; set; }
 
@@ -22,8 +23,10 @@ public class LocationViewModel
     public int TotalStock { get; set; }
 }
 
-public class LocationListViewModel
+public sealed record LocationListViewModel(
+    List<LocationViewModel> Locations,
+    string? SearchTerm
+)
 {
-    public List<LocationViewModel> Locations { get; set; } = [];
-    public string? SearchTerm { get; set; }
+    public LocationListViewModel() : this([], null) { }
 }

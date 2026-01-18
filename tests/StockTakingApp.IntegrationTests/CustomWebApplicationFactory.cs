@@ -7,7 +7,7 @@ using StockTakingApp.Services;
 
 namespace StockTakingApp.IntegrationTests;
 
-public class CustomWebApplicationFactory : WebApplicationFactory<Program>
+public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
     private readonly string _databaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
@@ -31,7 +31,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
             // Also need to remove the DbContext itself since it captures the options
             var dbContextDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(AppDbContext));
-            if (dbContextDescriptor != null)
+            if (dbContextDescriptor is not null)
             {
                 services.Remove(dbContextDescriptor);
             }
@@ -47,7 +47,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             }
 
             // Add fresh DbContext with in-memory database
-            services.AddDbContext<AppDbContext>((sp, options) =>
+            services.AddDbContext<AppDbContext>((_, options) =>
             {
                 options.UseInMemoryDatabase(_databaseName);
             }, ServiceLifetime.Scoped, ServiceLifetime.Scoped);
@@ -81,12 +81,12 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
         var requestVerificationToken = ExtractAntiForgeryToken(loginPageContent);
         
         // Submit login form
-        var loginContent = new FormUrlEncodedContent(new[]
-        {
+        var loginContent = new FormUrlEncodedContent(
+        [
             new KeyValuePair<string, string>("Email", email),
             new KeyValuePair<string, string>("Password", password),
             new KeyValuePair<string, string>("__RequestVerificationToken", requestVerificationToken)
-        });
+        ]);
 
         var loginResponse = await client.PostAsync("/account/login", loginContent);
 
@@ -107,12 +107,12 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
     private static string ExtractAntiForgeryToken(string html)
     {
         // Simple extraction - in real world you'd use HtmlAgilityPack
-        var startMarker = "name=\"__RequestVerificationToken\" type=\"hidden\" value=\"";
+        const string startMarker = "name=\"__RequestVerificationToken\" type=\"hidden\" value=\"";
         var startIndex = html.IndexOf(startMarker);
         if (startIndex == -1) return string.Empty;
         
         startIndex += startMarker.Length;
         var endIndex = html.IndexOf("\"", startIndex);
-        return html.Substring(startIndex, endIndex - startIndex);
+        return html[startIndex..endIndex];
     }
 }

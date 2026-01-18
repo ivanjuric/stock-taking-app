@@ -8,15 +8,8 @@ using StockTakingApp.Services;
 
 namespace StockTakingApp.Controllers;
 
-public class AccountController : Controller
+public sealed class AccountController(IAuthService authService) : Controller
 {
-    private readonly IAuthService _authService;
-
-    public AccountController(IAuthService authService)
-    {
-        _authService = authService;
-    }
-
     [HttpGet]
     [AllowAnonymous]
     public IActionResult Login(string? returnUrl = null)
@@ -35,8 +28,8 @@ public class AccountController : Controller
         if (!ModelState.IsValid)
             return View(model);
 
-        var user = await _authService.ValidateUserAsync(model.Email, model.Password);
-        if (user == null)
+        var user = await authService.ValidateUserAsync(model.Email, model.Password);
+        if (user is null)
         {
             ModelState.AddModelError(string.Empty, "Invalid email or password");
             return View(model);
@@ -78,8 +71,5 @@ public class AccountController : Controller
 
     [HttpGet]
     [AllowAnonymous]
-    public IActionResult AccessDenied()
-    {
-        return View();
-    }
+    public IActionResult AccessDenied() => View();
 }

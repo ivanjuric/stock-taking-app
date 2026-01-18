@@ -3,12 +3,8 @@ using StockTakingApp.Models.Entities;
 
 namespace StockTakingApp.Data;
 
-public class AppDbContext : DbContext
+public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
-    {
-    }
-
     public DbSet<User> Users => Set<User>();
     public DbSet<Product> Products => Set<Product>();
     public DbSet<Location> Locations => Set<Location>();

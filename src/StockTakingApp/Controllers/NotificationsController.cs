@@ -5,41 +5,27 @@ using Microsoft.AspNetCore.Mvc;
 using StockTakingApp.Models.Entities;
 using StockTakingApp.Models.ViewModels;
 using StockTakingApp.Services;
+using StockTakingApp.Mapping;
 
 namespace StockTakingApp.Controllers;
 
 [Authorize]
-public class NotificationsController : Controller
+public sealed class NotificationsController(
+    INotificationService notificationService, 
+    INotificationHub notificationHub) : Controller
 {
-    private readonly INotificationService _notificationService;
-    private readonly INotificationHub _notificationHub;
-
-    public NotificationsController(INotificationService notificationService, INotificationHub notificationHub)
-    {
-        _notificationService = notificationService;
-        _notificationHub = notificationHub;
-    }
-
     public async Task<IActionResult> Index()
     {
         ViewData["Title"] = "Notifications";
 
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-        var notifications = await _notificationService.GetUserNotificationsAsync(userId, 50);
+        var notifications = await notificationService.GetUserNotificationsAsync(userId, 50);
 
         var model = new NotificationListViewModel
         {
-            Notifications = notifications.Select(n => new NotificationViewModel
-            {
-                Id = n.Id,
-                Title = n.Title,
-                Message = n.Message,
-                Link = n.Link,
-                Type = n.Type,
-                IsRead = n.IsRead,
-                CreatedAt = n.CreatedAt,
-                TimeAgo = GetTimeAgo(n.CreatedAt)
-            }).ToList(),
+            Notifications = notifications
+                .Select(n => n.ToViewModel(n.CreatedAt.ToTimeAgo()))
+                .ToList(),
             UnreadCount = notifications.Count(n => !n.IsRead)
         };
 
@@ -50,7 +36,7 @@ public class NotificationsController : Controller
     public async Task<IActionResult> UnreadCount()
     {
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-        var count = await _notificationService.GetUnreadCountAsync(userId);
+        var count = await notificationService.GetUnreadCountAsync(userId);
         
         if (count == 0)
             return Content("");
@@ -63,7 +49,7 @@ public class NotificationsController : Controller
     public async Task<IActionResult> MarkAsRead(int id)
     {
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-        await _notificationService.MarkAsReadAsync(id, userId);
+        await notificationService.MarkAsReadAsync(id, userId);
 
         if (Request.Headers.ContainsKey("HX-Request"))
             return Ok();
@@ -76,7 +62,7 @@ public class NotificationsController : Controller
     public async Task<IActionResult> MarkAllAsRead()
     {
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-        await _notificationService.MarkAllAsReadAsync(userId);
+        await notificationService.MarkAllAsReadAsync(userId);
 
         if (Request.Headers.ContainsKey("HX-Request"))
             return Ok();
@@ -94,23 +80,24 @@ public class NotificationsController : Controller
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
         var channel = Channel.CreateUnbounded<Notification>();
 
-        _notificationHub.Subscribe(userId, channel);
+        notificationHub.Subscribe(userId, channel);
 
         try
         {
             await foreach (var notification in channel.Reader.ReadAllAsync(cancellationToken))
             {
-                var html = $@"
-<div class=""toast"" id=""toast-{notification.Id}"">
-    <div class=""toast-header"">
-        <strong class=""toast-title"">{notification.Title}</strong>
-        <button class=""toast-close"" onclick=""this.parentElement.parentElement.remove()"">&times;</button>
-    </div>
-    <div class=""toast-body"">
-        {notification.Message}
-        {(notification.Link != null ? $"<a href=\"{notification.Link}\" class=\"btn btn-sm btn-primary mt-sm\">View</a>" : "")}
-    </div>
-</div>";
+                var html = $"""
+                    <div class="toast" id="toast-{notification.Id}">
+                        <div class="toast-header">
+                            <strong class="toast-title">{notification.Title}</strong>
+                            <button class="toast-close" onclick="this.parentElement.parentElement.remove()">&times;</button>
+                        </div>
+                        <div class="toast-body">
+                            {notification.Message}
+                            {(notification.Link is not null ? $"""<a href="{notification.Link}" class="btn btn-sm btn-primary mt-sm">View</a>""" : "")}
+                        </div>
+                    </div>
+                    """;
 
                 // SSE format: event name + data
                 await Response.WriteAsync($"event: message\n", cancellationToken);
@@ -129,23 +116,7 @@ public class NotificationsController : Controller
         }
         finally
         {
-            _notificationHub.Unsubscribe(userId, channel);
+            notificationHub.Unsubscribe(userId, channel);
         }
-    }
-
-    private static string GetTimeAgo(DateTime dateTime)
-    {
-        var span = DateTime.UtcNow - dateTime;
-
-        if (span.TotalMinutes < 1)
-            return "just now";
-        if (span.TotalMinutes < 60)
-            return $"{(int)span.TotalMinutes}m ago";
-        if (span.TotalHours < 24)
-            return $"{(int)span.TotalHours}h ago";
-        if (span.TotalDays < 7)
-            return $"{(int)span.TotalDays}d ago";
-
-        return dateTime.ToString("MMM dd");
     }
 }

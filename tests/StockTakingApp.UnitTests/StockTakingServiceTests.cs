@@ -8,7 +8,7 @@ using StockTakingApp.Services;
 
 namespace StockTakingApp.UnitTests;
 
-public class StockTakingServiceTests : IDisposable
+public sealed class StockTakingServiceTests : IDisposable
 {
     private readonly AppDbContext _context;
     private readonly Mock<INotificationService> _notificationServiceMock;
@@ -60,8 +60,8 @@ public class StockTakingServiceTests : IDisposable
     public async Task CreateStockTakingAsync_ShouldCreateStockTakingWithItems()
     {
         // Arrange
-        var locationId = 1;
-        var requestedById = 1;
+        const int locationId = 1;
+        const int requestedById = 1;
         var workerIds = new List<int> { 2, 3 };
 
         // Act
@@ -107,7 +107,7 @@ public class StockTakingServiceTests : IDisposable
     public async Task StartStockTakingAsync_ShouldUpdateStatusToInProgress()
     {
         // Arrange
-        var stockTaking = await _service.CreateStockTakingAsync(1, 1, new List<int> { 2 }, null);
+        var stockTaking = await _service.CreateStockTakingAsync(1, 1, [2], null);
 
         // Act
         var result = await _service.StartStockTakingAsync(stockTaking.Id, 2);
@@ -122,7 +122,7 @@ public class StockTakingServiceTests : IDisposable
     public async Task StartStockTakingAsync_ShouldFailIfUserNotAssigned()
     {
         // Arrange
-        var stockTaking = await _service.CreateStockTakingAsync(1, 1, new List<int> { 2 }, null);
+        var stockTaking = await _service.CreateStockTakingAsync(1, 1, [2], null);
 
         // Act
         var result = await _service.StartStockTakingAsync(stockTaking.Id, 3); // User 3 not assigned
@@ -135,7 +135,7 @@ public class StockTakingServiceTests : IDisposable
     public async Task StartStockTakingAsync_ShouldNotifyAdmin()
     {
         // Arrange
-        var stockTaking = await _service.CreateStockTakingAsync(1, 1, new List<int> { 2 }, null);
+        var stockTaking = await _service.CreateStockTakingAsync(1, 1, [2], null);
         _notificationServiceMock.Reset();
 
         // Act
@@ -156,7 +156,7 @@ public class StockTakingServiceTests : IDisposable
     public async Task UpdateItemCountAsync_ShouldUpdateItemCount()
     {
         // Arrange
-        var stockTaking = await _service.CreateStockTakingAsync(1, 1, new List<int> { 2 }, null);
+        var stockTaking = await _service.CreateStockTakingAsync(1, 1, [2], null);
         await _service.StartStockTakingAsync(stockTaking.Id, 2);
         
         var item = await _context.StockTakingItems.FirstAsync(i => i.StockTakingId == stockTaking.Id);
@@ -178,7 +178,7 @@ public class StockTakingServiceTests : IDisposable
     public async Task UpdateItemCountAsync_ShouldFailIfNotInProgress()
     {
         // Arrange
-        var stockTaking = await _service.CreateStockTakingAsync(1, 1, new List<int> { 2 }, null);
+        var stockTaking = await _service.CreateStockTakingAsync(1, 1, [2], null);
         // NOT started - still in Requested status
         
         var item = await _context.StockTakingItems.FirstAsync(i => i.StockTakingId == stockTaking.Id);
@@ -194,7 +194,7 @@ public class StockTakingServiceTests : IDisposable
     public async Task CompleteStockTakingAsync_ShouldUpdateStatusToCompleted()
     {
         // Arrange
-        var stockTaking = await _service.CreateStockTakingAsync(1, 1, new List<int> { 2 }, null);
+        var stockTaking = await _service.CreateStockTakingAsync(1, 1, [2], null);
         await _service.StartStockTakingAsync(stockTaking.Id, 2);
         
         // Count all items
@@ -217,7 +217,7 @@ public class StockTakingServiceTests : IDisposable
     public async Task CompleteStockTakingAsync_ShouldFailIfNotAllItemsCounted()
     {
         // Arrange
-        var stockTaking = await _service.CreateStockTakingAsync(1, 1, new List<int> { 2 }, null);
+        var stockTaking = await _service.CreateStockTakingAsync(1, 1, [2], null);
         await _service.StartStockTakingAsync(stockTaking.Id, 2);
         
         // Only count one item
@@ -235,7 +235,7 @@ public class StockTakingServiceTests : IDisposable
     public async Task CompleteStockTakingAsync_ShouldNotifyAdminWithDiscrepancyCount()
     {
         // Arrange
-        var stockTaking = await _service.CreateStockTakingAsync(1, 1, new List<int> { 2 }, null);
+        var stockTaking = await _service.CreateStockTakingAsync(1, 1, [2], null);
         await _service.StartStockTakingAsync(stockTaking.Id, 2);
         
         var items = await _context.StockTakingItems.Where(i => i.StockTakingId == stockTaking.Id).ToListAsync();
@@ -264,7 +264,7 @@ public class StockTakingServiceTests : IDisposable
     public async Task AcceptCountsAsync_ShouldUpdateStockQuantities()
     {
         // Arrange
-        var stockTaking = await _service.CreateStockTakingAsync(1, 1, new List<int> { 2 }, null);
+        var stockTaking = await _service.CreateStockTakingAsync(1, 1, [2], null);
         await _service.StartStockTakingAsync(stockTaking.Id, 2);
         
         var items = await _context.StockTakingItems.Where(i => i.StockTakingId == stockTaking.Id).ToListAsync();
@@ -294,7 +294,7 @@ public class StockTakingServiceTests : IDisposable
     public async Task AcceptCountsAsync_ShouldFailIfNotCompleted()
     {
         // Arrange
-        var stockTaking = await _service.CreateStockTakingAsync(1, 1, new List<int> { 2 }, null);
+        var stockTaking = await _service.CreateStockTakingAsync(1, 1, [2], null);
         await _service.StartStockTakingAsync(stockTaking.Id, 2);
         // NOT completed
 
@@ -309,7 +309,7 @@ public class StockTakingServiceTests : IDisposable
     public async Task IsUserAssignedAsync_ShouldReturnTrueForAssignedUser()
     {
         // Arrange
-        var stockTaking = await _service.CreateStockTakingAsync(1, 1, new List<int> { 2 }, null);
+        var stockTaking = await _service.CreateStockTakingAsync(1, 1, [2], null);
 
         // Act
         var result = await _service.IsUserAssignedAsync(stockTaking.Id, 2);
@@ -322,7 +322,7 @@ public class StockTakingServiceTests : IDisposable
     public async Task IsUserAssignedAsync_ShouldReturnFalseForUnassignedUser()
     {
         // Arrange
-        var stockTaking = await _service.CreateStockTakingAsync(1, 1, new List<int> { 2 }, null);
+        var stockTaking = await _service.CreateStockTakingAsync(1, 1, [2], null);
 
         // Act
         var result = await _service.IsUserAssignedAsync(stockTaking.Id, 3);
@@ -335,11 +335,11 @@ public class StockTakingServiceTests : IDisposable
     public async Task GetRecentStockTakingsAsync_ShouldReturnOrderedByCreatedAtDescending()
     {
         // Arrange
-        await _service.CreateStockTakingAsync(1, 1, new List<int> { 2 }, "First");
+        await _service.CreateStockTakingAsync(1, 1, [2], "First");
         await Task.Delay(10);
-        await _service.CreateStockTakingAsync(1, 1, new List<int> { 2 }, "Second");
+        await _service.CreateStockTakingAsync(1, 1, [2], "Second");
         await Task.Delay(10);
-        await _service.CreateStockTakingAsync(1, 1, new List<int> { 2 }, "Third");
+        await _service.CreateStockTakingAsync(1, 1, [2], "Third");
 
         // Act
         var result = await _service.GetRecentStockTakingsAsync(10);

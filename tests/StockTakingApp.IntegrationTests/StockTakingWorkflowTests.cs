@@ -11,20 +11,13 @@ namespace StockTakingApp.IntegrationTests;
 /// Integration tests for the complete stock taking workflow.
 /// These tests use the actual services with an in-memory database.
 /// </summary>
-public class StockTakingWorkflowTests : IClassFixture<CustomWebApplicationFactory>
+public sealed class StockTakingWorkflowTests(CustomWebApplicationFactory factory) : IClassFixture<CustomWebApplicationFactory>
 {
-    private readonly CustomWebApplicationFactory _factory;
-
-    public StockTakingWorkflowTests(CustomWebApplicationFactory factory)
-    {
-        _factory = factory;
-    }
-
     [Fact]
     public async Task CompleteWorkflow_AdminCreatesStockTaking_WorkerCountsItems_AdminAcceptsCounts()
     {
         // Arrange
-        using var scope = _factory.Services.CreateScope();
+        using var scope = factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var stockTakingService = scope.ServiceProvider.GetRequiredService<IStockTakingService>();
         var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
@@ -43,7 +36,7 @@ public class StockTakingWorkflowTests : IClassFixture<CustomWebApplicationFactor
         var stockTaking = await stockTakingService.CreateStockTakingAsync(
             location.Id, 
             admin.Id, 
-            new List<int> { worker.Id }, 
+            [worker.Id], 
             "Integration test stock taking");
 
         stockTaking.Should().NotBeNull();
@@ -130,7 +123,7 @@ public class StockTakingWorkflowTests : IClassFixture<CustomWebApplicationFactor
     public async Task Workflow_CannotCompleteWithoutCountingAllItems()
     {
         // Arrange
-        using var scope = _factory.Services.CreateScope();
+        using var scope = factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var stockTakingService = scope.ServiceProvider.GetRequiredService<IStockTakingService>();
 
@@ -140,7 +133,7 @@ public class StockTakingWorkflowTests : IClassFixture<CustomWebApplicationFactor
 
         // Create and start stock taking
         var stockTaking = await stockTakingService.CreateStockTakingAsync(
-            location.Id, admin.Id, new List<int> { worker.Id }, null);
+            location.Id, admin.Id, [worker.Id], null);
         await stockTakingService.StartStockTakingAsync(stockTaking.Id, worker.Id);
 
         // Only count first item
@@ -162,7 +155,7 @@ public class StockTakingWorkflowTests : IClassFixture<CustomWebApplicationFactor
     public async Task Workflow_UnassignedWorkerCannotStart()
     {
         // Arrange
-        using var scope = _factory.Services.CreateScope();
+        using var scope = factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var stockTakingService = scope.ServiceProvider.GetRequiredService<IStockTakingService>();
 
@@ -174,7 +167,7 @@ public class StockTakingWorkflowTests : IClassFixture<CustomWebApplicationFactor
 
         // Create stock taking assigned only to worker1
         var stockTaking = await stockTakingService.CreateStockTakingAsync(
-            location.Id, admin.Id, new List<int> { worker1.Id }, null);
+            location.Id, admin.Id, [worker1.Id], null);
 
         // Act - worker2 tries to start
         var result = await stockTakingService.StartStockTakingAsync(stockTaking.Id, worker2.Id);
@@ -190,7 +183,7 @@ public class StockTakingWorkflowTests : IClassFixture<CustomWebApplicationFactor
     public async Task Workflow_CannotAcceptCountsBeforeCompletion()
     {
         // Arrange
-        using var scope = _factory.Services.CreateScope();
+        using var scope = factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var stockTakingService = scope.ServiceProvider.GetRequiredService<IStockTakingService>();
 
@@ -200,7 +193,7 @@ public class StockTakingWorkflowTests : IClassFixture<CustomWebApplicationFactor
 
         // Create and start stock taking
         var stockTaking = await stockTakingService.CreateStockTakingAsync(
-            location.Id, admin.Id, new List<int> { worker.Id }, null);
+            location.Id, admin.Id, [worker.Id], null);
         await stockTakingService.StartStockTakingAsync(stockTaking.Id, worker.Id);
 
         // Act - try to accept counts while in progress
@@ -214,7 +207,7 @@ public class StockTakingWorkflowTests : IClassFixture<CustomWebApplicationFactor
     public async Task Worker_CanSaveItemCount_UpdatesQuantityAndCountedBy()
     {
         // Arrange
-        using var scope = _factory.Services.CreateScope();
+        using var scope = factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var stockTakingService = scope.ServiceProvider.GetRequiredService<IStockTakingService>();
 
@@ -225,15 +218,15 @@ public class StockTakingWorkflowTests : IClassFixture<CustomWebApplicationFactor
 
         // Create and start stock taking
         var stockTaking = await stockTakingService.CreateStockTakingAsync(
-            location.Id, admin.Id, new List<int> { worker.Id }, null);
+            location.Id, admin.Id, [worker.Id], null);
         await stockTakingService.StartStockTakingAsync(stockTaking.Id, worker.Id);
 
         // Get an item to count
         var item = await context.StockTakingItems
             .FirstAsync(i => i.StockTakingId == stockTaking.Id);
         
-        var countedQuantity = 42;
-        var notes = "Test count by worker";
+        const int countedQuantity = 42;
+        const string notes = "Test count by worker";
 
         // Act - Worker saves item count
         var success = await stockTakingService.UpdateItemCountAsync(
@@ -262,7 +255,7 @@ public class StockTakingWorkflowTests : IClassFixture<CustomWebApplicationFactor
     public async Task Workflow_MultipleWorkersCanCollaborate()
     {
         // Arrange
-        using var scope = _factory.Services.CreateScope();
+        using var scope = factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var stockTakingService = scope.ServiceProvider.GetRequiredService<IStockTakingService>();
 
@@ -281,7 +274,7 @@ public class StockTakingWorkflowTests : IClassFixture<CustomWebApplicationFactor
 
         // Create stock taking assigned to both workers
         var stockTaking = await stockTakingService.CreateStockTakingAsync(
-            location.Id, admin.Id, new List<int> { worker1.Id, worker2.Id }, "Team counting");
+            location.Id, admin.Id, [worker1.Id, worker2.Id], "Team counting");
 
         // Worker 1 starts
         await stockTakingService.StartStockTakingAsync(stockTaking.Id, worker1.Id);

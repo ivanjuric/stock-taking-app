@@ -1,29 +1,27 @@
 namespace StockTakingApp.Models.ViewModels;
 
-public class StockViewModel
+public sealed record StockViewModel
 {
-    public int Id { get; set; }
-    public int ProductId { get; set; }
-    public string ProductSku { get; set; } = string.Empty;
-    public string ProductName { get; set; } = string.Empty;
-    public string ProductCategory { get; set; } = string.Empty;
-    public int LocationId { get; set; }
-    public string LocationCode { get; set; } = string.Empty;
-    public string LocationName { get; set; } = string.Empty;
-    public int Quantity { get; set; }
-    public DateTime UpdatedAt { get; set; }
+    public int Id { get; init; }
+    public int ProductId { get; init; }
+    public string ProductSku { get; init; } = string.Empty;
+    public string ProductName { get; init; } = string.Empty;
+    public string ProductCategory { get; init; } = string.Empty;
+    public int LocationId { get; init; }
+    public string LocationCode { get; init; } = string.Empty;
+    public string LocationName { get; init; } = string.Empty;
+    public int Quantity { get; init; }
+    public DateTime UpdatedAt { get; init; }
 }
 
-public class StockListViewModel
+public sealed record StockListViewModel(
+    List<StockViewModel> Stocks,
+    int? LocationId,
+    string? LocationName,
+    List<LocationViewModel> Locations
+)
 {
-    public List<StockViewModel> Stocks { get; set; } = [];
-    public int? LocationId { get; set; }
-    public string? LocationName { get; set; }
-    public List<LocationViewModel> Locations { get; set; } = [];
+    public StockListViewModel() : this([], null, null, []) { }
 }
 
-public class StockUpdateViewModel
-{
-    public int Id { get; set; }
-    public int Quantity { get; set; }
-}
+public sealed record StockUpdateViewModel(int Id, int Quantity);

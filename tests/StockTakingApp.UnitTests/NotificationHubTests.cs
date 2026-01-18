@@ -6,14 +6,9 @@ using StockTakingApp.Services;
 
 namespace StockTakingApp.UnitTests;
 
-public class NotificationHubTests
+public sealed class NotificationHubTests
 {
-    private readonly NotificationHub _hub;
-
-    public NotificationHubTests()
-    {
-        _hub = new NotificationHub();
-    }
+    private readonly NotificationHub _hub = new();
 
     [Fact]
     public void Subscribe_ShouldAddChannel()
@@ -118,7 +113,7 @@ public class NotificationHubTests
         await _hub.SendToUserAsync(1, notification);
 
         // Assert - channel should not receive the notification
-        channel.Reader.TryRead(out var result).Should().BeFalse();
+        channel.Reader.TryRead(out _).Should().BeFalse();
     }
 
     [Fact]
@@ -139,7 +134,7 @@ public class NotificationHubTests
         };
 
         // Act
-        await _hub.SendToUsersAsync(new[] { 1, 2 }, notification);
+        await _hub.SendToUsersAsync([1, 2], notification);
 
         // Assert
         var result1 = await channel1.Reader.ReadAsync();

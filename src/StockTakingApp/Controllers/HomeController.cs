@@ -12,28 +12,12 @@ using StockTakingApp.Services;
 namespace StockTakingApp.Controllers;
 
 [Authorize]
-public class HomeController : Controller
+public sealed class HomeController(AppDbContext context, IStockTakingService stockTakingService) : Controller
 {
-    private readonly AppDbContext _context;
-    private readonly IStockTakingService _stockTakingService;
-
-    public HomeController(AppDbContext context, IStockTakingService stockTakingService)
-    {
-        _context = context;
-        _stockTakingService = stockTakingService;
-    }
-
-    public async Task<IActionResult> Index()
-    {
-        if (User.IsInRole("Admin"))
-        {
-            return await AdminDashboard();
-        }
-        else
-        {
-            return await WorkerDashboard();
-        }
-    }
+    public async Task<IActionResult> Index() =>
+        User.IsInRole("Admin") 
+            ? await AdminDashboard() 
+            : await WorkerDashboard();
 
     private async Task<IActionResult> AdminDashboard()
     {
@@ -43,20 +27,20 @@ public class HomeController : Controller
 
         var model = new AdminDashboardViewModel
         {
-            TotalProducts = await _context.Products.CountAsync(),
-            TotalLocations = await _context.Locations.CountAsync(),
-            PendingStockTakings = await _context.StockTakings
+            TotalProducts = await context.Products.CountAsync(),
+            TotalLocations = await context.Locations.CountAsync(),
+            PendingStockTakings = await context.StockTakings
                 .CountAsync(st => st.Status == StockTakingStatus.Requested),
-            InProgressStockTakings = await _context.StockTakings
+            InProgressStockTakings = await context.StockTakings
                 .CountAsync(st => st.Status == StockTakingStatus.InProgress),
-            CompletedThisWeek = await _context.StockTakings
+            CompletedThisWeek = await context.StockTakings
                 .CountAsync(st => st.Status == StockTakingStatus.Completed && st.CompletedAt >= weekAgo),
-            TotalDiscrepancies = await _context.StockTakingItems
+            TotalDiscrepancies = await context.StockTakingItems
                 .CountAsync(i => i.StockTaking.Status == StockTakingStatus.Completed 
                     && i.CountedQuantity.HasValue 
                     && i.CountedQuantity != i.ExpectedQuantity),
-            RecentStockTakings = await _stockTakingService.GetRecentStockTakingsAsync(5),
-            DiscrepancyAlerts = await _stockTakingService.GetDiscrepancyAlertsAsync(5)
+            RecentStockTakings = await stockTakingService.GetRecentStockTakingsAsync(5),
+            DiscrepancyAlerts = await stockTakingService.GetDiscrepancyAlertsAsync(5)
         };
 
         return View("AdminDashboard", model);
@@ -69,13 +53,13 @@ public class HomeController : Controller
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
         var weekAgo = DateTime.UtcNow.AddDays(-7);
 
-        var myTasks = await _stockTakingService.GetWorkerStockTakingsAsync(userId);
+        var myTasks = await stockTakingService.GetWorkerStockTakingsAsync(userId);
 
         var model = new WorkerDashboardViewModel
         {
             AssignedTasks = myTasks.Count(t => t.Status == StockTakingStatus.Requested),
             InProgressTasks = myTasks.Count(t => t.Status == StockTakingStatus.InProgress),
-            CompletedThisWeek = await _context.StockTakings
+            CompletedThisWeek = await context.StockTakings
                 .CountAsync(st => st.Assignments.Any(a => a.UserId == userId)
                     && st.Status == StockTakingStatus.Completed
                     && st.CompletedAt >= weekAgo),
@@ -86,8 +70,6 @@ public class HomeController : Controller
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-    public IActionResult Error()
-    {
-        return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-    }
+    public IActionResult Error() =>
+        View(new ErrorViewModel(Activity.Current?.Id ?? HttpContext.TraceIdentifier));
 }

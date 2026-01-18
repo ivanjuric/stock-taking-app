@@ -2,16 +2,17 @@ using StockTakingApp.Models.Enums;
 
 namespace StockTakingApp.Models.ViewModels;
 
-public class NotificationViewModel
+public sealed record NotificationViewModel
 {
-    public int Id { get; set; }
-    public string Title { get; set; } = string.Empty;
-    public string Message { get; set; } = string.Empty;
-    public string? Link { get; set; }
-    public NotificationType Type { get; set; }
-    public bool IsRead { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public string TimeAgo { get; set; } = string.Empty;
+    public int Id { get; init; }
+    public string Title { get; init; } = string.Empty;
+    public string Message { get; init; } = string.Empty;
+    public string? Link { get; init; }
+    public NotificationType Type { get; init; }
+    public bool IsRead { get; init; }
+    public DateTime CreatedAt { get; init; }
+    public string TimeAgo { get; init; } = string.Empty;
+    
     public string IconClass => Type switch
     {
         NotificationType.StockTakingRequested => "icon-clipboard",
@@ -21,8 +22,10 @@ public class NotificationViewModel
     };
 }
 
-public class NotificationListViewModel
+public sealed record NotificationListViewModel(
+    List<NotificationViewModel> Notifications,
+    int UnreadCount
+)
 {
-    public List<NotificationViewModel> Notifications { get; set; } = [];
-    public int UnreadCount { get; set; }
+    public NotificationListViewModel() : this([], 0) { }
 }

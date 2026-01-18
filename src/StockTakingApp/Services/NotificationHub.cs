@@ -4,13 +4,13 @@ using StockTakingApp.Models.Entities;
 
 namespace StockTakingApp.Services;
 
-public class NotificationHub : INotificationHub
+public sealed class NotificationHub : INotificationHub
 {
     private readonly ConcurrentDictionary<int, ConcurrentBag<Channel<Notification>>> _connections = new();
 
     public void Subscribe(int userId, Channel<Notification> channel)
     {
-        var channels = _connections.GetOrAdd(userId, _ => new ConcurrentBag<Channel<Notification>>());
+        var channels = _connections.GetOrAdd(userId, _ => []);
         channels.Add(channel);
     }
 
