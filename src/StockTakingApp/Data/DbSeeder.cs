@@ -90,6 +90,62 @@ public static class DbSeeder
         context.Products.AddRange(products);
         await context.SaveChangesAsync();
 
+        // Add photos to products (using Unsplash stock photos)
+        var productPhotos = new List<ProductPhoto>
+        {
+            // Electronics
+            new() { ProductId = products[0].Id, Url = "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=400&h=300&fit=crop", Caption = "Wireless mouse - front view", DisplayOrder = 0 },
+            new() { ProductId = products[0].Id, Url = "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=400&h=300&fit=crop", Caption = "Wireless mouse - side view", DisplayOrder = 1 },
+            new() { ProductId = products[1].Id, Url = "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=400&h=300&fit=crop", Caption = "Mechanical keyboard", DisplayOrder = 0 },
+            new() { ProductId = products[1].Id, Url = "https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?w=400&h=300&fit=crop", Caption = "Keyboard RGB lighting", DisplayOrder = 1 },
+            new() { ProductId = products[2].Id, Url = "https://images.unsplash.com/photo-1625723044792-44de16ccb4e9?w=400&h=300&fit=crop", Caption = "USB-C Hub", DisplayOrder = 0 },
+            new() { ProductId = products[3].Id, Url = "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=400&h=300&fit=crop", Caption = "Monitor stand", DisplayOrder = 0 },
+            new() { ProductId = products[4].Id, Url = "https://images.unsplash.com/photo-1587826080692-f439cd0b70da?w=400&h=300&fit=crop", Caption = "HD Webcam", DisplayOrder = 0 },
+            
+            // Office Supplies
+            new() { ProductId = products[5].Id, Url = "https://images.unsplash.com/photo-1568871920640-08bce35c8a80?w=400&h=300&fit=crop", Caption = "Heavy duty stapler", DisplayOrder = 0 },
+            new() { ProductId = products[6].Id, Url = "https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=400&h=300&fit=crop", Caption = "Paper clips", DisplayOrder = 0 },
+            new() { ProductId = products[7].Id, Url = "https://images.unsplash.com/photo-1517842645767-c639042777db?w=400&h=300&fit=crop", Caption = "Notebook", DisplayOrder = 0 },
+            new() { ProductId = products[7].Id, Url = "https://images.unsplash.com/photo-1501618669935-18b6ecb13d6d?w=400&h=300&fit=crop", Caption = "Notebook opened", DisplayOrder = 1 },
+            new() { ProductId = products[8].Id, Url = "https://images.unsplash.com/photo-1585336261022-680e295ce3fe?w=400&h=300&fit=crop", Caption = "Pen set", DisplayOrder = 0 },
+            new() { ProductId = products[9].Id, Url = "https://images.unsplash.com/photo-1544816155-12df9643f363?w=400&h=300&fit=crop", Caption = "Desk organizer", DisplayOrder = 0 },
+            
+            // Tools
+            new() { ProductId = products[10].Id, Url = "https://images.unsplash.com/photo-1426927308491-6380b6a9936f?w=400&h=300&fit=crop", Caption = "Screwdriver set", DisplayOrder = 0 },
+            new() { ProductId = products[10].Id, Url = "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400&h=300&fit=crop", Caption = "Precision tools", DisplayOrder = 1 },
+            new() { ProductId = products[11].Id, Url = "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=400&h=300&fit=crop", Caption = "Measuring tape", DisplayOrder = 0 },
+            new() { ProductId = products[12].Id, Url = "https://images.unsplash.com/photo-1572981779307-38b8cabb2407?w=400&h=300&fit=crop", Caption = "Utility knife", DisplayOrder = 0 },
+            new() { ProductId = products[13].Id, Url = "https://images.unsplash.com/photo-1567360425618-1594206637d2?w=400&h=300&fit=crop", Caption = "LED Flashlight", DisplayOrder = 0 },
+            new() { ProductId = products[14].Id, Url = "https://images.unsplash.com/photo-1580901368919-7738efb0f87e?w=400&h=300&fit=crop", Caption = "Wrench set", DisplayOrder = 0 },
+            
+            // Packaging
+            new() { ProductId = products[15].Id, Url = "https://images.unsplash.com/photo-1607166452427-7e4477079cb9?w=400&h=300&fit=crop", Caption = "Cardboard boxes", DisplayOrder = 0 },
+            new() { ProductId = products[16].Id, Url = "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop", Caption = "Medium shipping box", DisplayOrder = 0 },
+            new() { ProductId = products[17].Id, Url = "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=400&h=300&fit=crop", Caption = "Bubble wrap", DisplayOrder = 0 },
+            new() { ProductId = products[18].Id, Url = "https://images.unsplash.com/photo-1553413077-190dd305871c?w=400&h=300&fit=crop", Caption = "Packing tape", DisplayOrder = 0 },
+            new() { ProductId = products[19].Id, Url = "https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?w=400&h=300&fit=crop", Caption = "Shipping labels", DisplayOrder = 0 }
+        };
+
+        context.ProductPhotos.AddRange(productPhotos);
+        await context.SaveChangesAsync();
+
+        // Add photos to locations (using Unsplash stock photos)
+        var locationPhotos = new List<LocationPhoto>
+        {
+            new() { LocationId = locations[0].Id, Url = "https://images.unsplash.com/photo-1553413077-190dd305871c?w=400&h=300&fit=crop", Caption = "Main warehouse aisle", DisplayOrder = 0 },
+            new() { LocationId = locations[0].Id, Url = "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=400&h=300&fit=crop", Caption = "Storage shelves", DisplayOrder = 1 },
+            new() { LocationId = locations[0].Id, Url = "https://images.unsplash.com/photo-1565891741441-64926e441838?w=400&h=300&fit=crop", Caption = "Warehouse overview", DisplayOrder = 2 },
+            new() { LocationId = locations[1].Id, Url = "https://images.unsplash.com/photo-1578575437130-527eed3abbec?w=400&h=300&fit=crop", Caption = "Overflow storage", DisplayOrder = 0 },
+            new() { LocationId = locations[1].Id, Url = "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=400&h=300&fit=crop", Caption = "Secondary area", DisplayOrder = 1 },
+            new() { LocationId = locations[2].Id, Url = "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=300&fit=crop", Caption = "Store front display", DisplayOrder = 0 },
+            new() { LocationId = locations[2].Id, Url = "https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?w=400&h=300&fit=crop", Caption = "Customer area", DisplayOrder = 1 },
+            new() { LocationId = locations[3].Id, Url = "https://images.unsplash.com/photo-1600880292089-90a7e086ee0c?w=400&h=300&fit=crop", Caption = "Back room storage", DisplayOrder = 0 },
+            new() { LocationId = locations[4].Id, Url = "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop", Caption = "Returns processing area", DisplayOrder = 0 }
+        };
+
+        context.LocationPhotos.AddRange(locationPhotos);
+        await context.SaveChangesAsync();
+
         // Create stock entries (random quantities across locations)
         var random = new Random(42); // Fixed seed for reproducibility
         var stocks = new List<Stock>();

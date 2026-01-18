@@ -63,12 +63,9 @@
         <h3 class="card-title">All Items (@Model.TotalItems)</h3>
         @if (!Model.HasAcceptedCounts)
         {
-            <form asp-action="AcceptCounts" asp-route-id="@Model.Id" method="post"
-                  onsubmit="return confirm('This will update stock levels with the counted quantities. This action cannot be undone. Continue?');">
-                <button type="submit" class="btn btn-success">
-                    Accept Counts & Update Stock
-                </button>
-            </form>
+            <a href="#confirm-accept-counts" class="btn btn-success">
+                Accept Counts & Update Stock
+            </a>
         }
         else
         {
@@ -133,6 +130,33 @@
     <div class="card mt-lg" style="border-color: var(--color-success); background: var(--status-completed-bg);">
         <div class="card-body text-center">
             <h3 class="font-semibold text-success">@TempData["Success"]</h3>
+        </div>
+    </div>
+}
+
+@if (!Model.HasAcceptedCounts)
+{
+    <div id="confirm-accept-counts" class="confirm-modal">
+        <a href="#!" class="confirm-modal-backdrop"></a>
+        <div class="confirm-modal-content">
+            <div class="confirm-modal-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+            </div>
+            <h3 class="confirm-modal-title">Confirm Stock Update</h3>
+            <p class="confirm-modal-message">
+                This will update stock levels with the counted quantities.
+                <strong>This action cannot be undone.</strong>
+            </p>
+            <div class="confirm-modal-actions">
+                <a href="#!" class="btn btn-secondary">Cancel</a>
+                <form asp-action="AcceptCounts" asp-route-id="@Model.Id" method="post" style="display: inline;">
+                    <button type="submit" class="btn btn-success">Accept Counts</button>
+                </form>
+            </div>
         </div>
     </div>
 }

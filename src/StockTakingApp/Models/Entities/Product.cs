@@ -12,4 +12,5 @@ public class Product
     // Navigation properties
     public ICollection<Stock> Stocks { get; set; } = [];
     public ICollection<StockTakingItem> StockTakingItems { get; set; } = [];
+    public ICollection<ProductPhoto> Photos { get; set; } = [];
 }

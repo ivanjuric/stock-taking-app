@@ -1,0 +1,32 @@
+@model (List<StockTakingApp.Models.ViewModels.PhotoViewModel> Photos, string IdPrefix)
+@{
+    var photos = Model.Photos;
+    var idPrefix = Model.IdPrefix;
+}
+
+@if (photos.Count > 0)
+{
+    <div class="table-gallery">
+        @for (int i = 0; i < Math.Min(photos.Count, 3); i++)
+        {
+            var photo = photos[i];
+            <a href="#@(idPrefix)-photo-@photo.Id" class="gallery-thumb" title="@(photo.Caption ?? "View photo")">
+                <img src="@photo.Url" alt="@(photo.Caption ?? "Photo")" loading="lazy" />
+                @if (i == 2 && photos.Count > 3)
+                {
+                    <span class="gallery-thumb-count">+@(photos.Count - 3)</span>
+                }
+            </a>
+        }
+    </div>
+}
+else
+{
+    <div class="no-photos" title="No photos">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21 15 16 10 5 21"/>
+        </svg>
+    </div>
+}

@@ -11,6 +11,16 @@ namespace StockTakingApp.Mapping;
 [Mapper]
 public static partial class EntityMapper
 {
+    // Photo mappings
+    public static partial PhotoViewModel ToViewModel(this ProductPhoto photo);
+    public static partial PhotoViewModel ToViewModel(this LocationPhoto photo);
+    
+    public static List<PhotoViewModel> ToViewModels(this IEnumerable<ProductPhoto> photos) =>
+        photos.OrderBy(p => p.DisplayOrder).Select(p => p.ToViewModel()).ToList();
+    
+    public static List<PhotoViewModel> ToViewModels(this IEnumerable<LocationPhoto> photos) =>
+        photos.OrderBy(p => p.DisplayOrder).Select(p => p.ToViewModel()).ToList();
+
     // Product mappings
     public static partial ProductViewModel ToViewModel(this Product product);
     public static partial void UpdateFromViewModel(this Product product, ProductViewModel viewModel);

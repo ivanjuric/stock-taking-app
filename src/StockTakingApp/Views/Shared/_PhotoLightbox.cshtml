@@ -1,0 +1,61 @@
+@model (List<StockTakingApp.Models.ViewModels.PhotoViewModel> Photos, string IdPrefix)
+@{
+    var photos = Model.Photos;
+    var idPrefix = Model.IdPrefix;
+}
+
+@foreach (var photo in photos)
+{
+    var currentIndex = photos.IndexOf(photo);
+    var prevPhoto = currentIndex > 0 ? photos[currentIndex - 1] : null;
+    var nextPhoto = currentIndex < photos.Count - 1 ? photos[currentIndex + 1] : null;
+    
+    <div id="@(idPrefix)-photo-@photo.Id" class="gallery-lightbox">
+        <a href="#!" class="lightbox-backdrop"></a>
+        <div class="lightbox-content">
+            <a href="#!" class="lightbox-close" title="Close">&times;</a>
+            <img src="@photo.Url" alt="@(photo.Caption ?? "Photo")" class="lightbox-image" />
+            @if (!string.IsNullOrEmpty(photo.Caption))
+            {
+                <div class="lightbox-caption">@photo.Caption</div>
+            }
+            @if (photos.Count > 1)
+            {
+                <div class="gallery-nav">
+                    @if (prevPhoto != null)
+                    {
+                        <a href="#@(idPrefix)-photo-@prevPhoto.Id" title="Previous">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="15 18 9 12 15 6"/>
+                            </svg>
+                        </a>
+                    }
+                    else
+                    {
+                        <span></span>
+                    }
+                    @if (nextPhoto != null)
+                    {
+                        <a href="#@(idPrefix)-photo-@nextPhoto.Id" title="Next">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="9 18 15 12 9 6"/>
+                            </svg>
+                        </a>
+                    }
+                    else
+                    {
+                        <span></span>
+                    }
+                </div>
+                <div class="gallery-indicators">
+                    @foreach (var indicator in photos)
+                    {
+                        <a href="#@(idPrefix)-photo-@indicator.Id" 
+                           class="gallery-indicator @(indicator.Id == photo.Id ? "active" : "")"
+                           title="@(indicator.Caption ?? $"Photo {photos.IndexOf(indicator) + 1}")"></a>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+}

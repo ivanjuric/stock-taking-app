@@ -60,7 +60,22 @@ public sealed class ProductsController(AppDbContext context) : Controller
         var products = await query
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .Select(p => p.ToViewModel())
+            .Select(p => new ProductViewModel
+            {
+                Id = p.Id,
+                Sku = p.Sku,
+                Name = p.Name,
+                Description = p.Description,
+                Category = p.Category,
+                CreatedAt = p.CreatedAt,
+                Photos = p.Photos.OrderBy(ph => ph.DisplayOrder).Select(ph => new PhotoViewModel
+                {
+                    Id = ph.Id,
+                    Url = ph.Url,
+                    Caption = ph.Caption,
+                    DisplayOrder = ph.DisplayOrder
+                }).ToList()
+            })
             .ToListAsync();
 
         var categories = await context.Products
@@ -136,11 +151,29 @@ public sealed class ProductsController(AppDbContext context) : Controller
     {
         ViewData["Title"] = "Edit Product";
 
-        var product = await context.Products.FindAsync(id);
+        var product = await context.Products
+            .Where(p => p.Id == id)
+            .Select(p => new ProductViewModel
+            {
+                Id = p.Id,
+                Sku = p.Sku,
+                Name = p.Name,
+                Description = p.Description,
+                Category = p.Category,
+                CreatedAt = p.CreatedAt,
+                Photos = p.Photos.OrderBy(ph => ph.DisplayOrder).Select(ph => new PhotoViewModel
+                {
+                    Id = ph.Id,
+                    Url = ph.Url,
+                    Caption = ph.Caption,
+                    DisplayOrder = ph.DisplayOrder
+                }).ToList()
+            })
+            .FirstOrDefaultAsync();
         if (product is null)
             return NotFound();
 
-        return View(product.ToViewModel());
+        return View(product);
     }
 
     [HttpPost]

@@ -65,7 +65,14 @@ public sealed class LocationsController(AppDbContext context) : Controller
                 Description = l.Description,
                 CreatedAt = l.CreatedAt,
                 ProductCount = l.Stocks.Select(s => s.ProductId).Distinct().Count(),
-                TotalStock = l.Stocks.Sum(s => s.Quantity)
+                TotalStock = l.Stocks.Sum(s => s.Quantity),
+                Photos = l.Photos.OrderBy(p => p.DisplayOrder).Select(p => new PhotoViewModel
+                {
+                    Id = p.Id,
+                    Url = p.Url,
+                    Caption = p.Caption,
+                    DisplayOrder = p.DisplayOrder
+                }).ToList()
             })
             .ToListAsync();
 
@@ -131,11 +138,30 @@ public sealed class LocationsController(AppDbContext context) : Controller
     {
         ViewData["Title"] = "Edit Location";
 
-        var location = await context.Locations.FindAsync(id);
+        var location = await context.Locations
+            .Where(l => l.Id == id)
+            .Select(l => new LocationViewModel
+            {
+                Id = l.Id,
+                Code = l.Code,
+                Name = l.Name,
+                Description = l.Description,
+                CreatedAt = l.CreatedAt,
+                ProductCount = l.Stocks.Select(s => s.ProductId).Distinct().Count(),
+                TotalStock = l.Stocks.Sum(s => s.Quantity),
+                Photos = l.Photos.OrderBy(ph => ph.DisplayOrder).Select(ph => new PhotoViewModel
+                {
+                    Id = ph.Id,
+                    Url = ph.Url,
+                    Caption = ph.Caption,
+                    DisplayOrder = ph.DisplayOrder
+                }).ToList()
+            })
+            .FirstOrDefaultAsync();
         if (location is null)
             return NotFound();
 
-        return View(location.ToViewModel());
+        return View(location);
     }
 
     [HttpPost]

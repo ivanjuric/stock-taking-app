@@ -11,4 +11,5 @@ public class Location
     // Navigation properties
     public ICollection<Stock> Stocks { get; set; } = [];
     public ICollection<StockTaking> StockTakings { get; set; } = [];
+    public ICollection<LocationPhoto> Photos { get; set; } = [];
 }

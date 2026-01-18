@@ -13,6 +13,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     public DbSet<StockTakingAssignment> StockTakingAssignments => Set<StockTakingAssignment>();
     public DbSet<StockTakingItem> StockTakingItems => Set<StockTakingItem>();
     public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<ProductPhoto> ProductPhotos => Set<ProductPhoto>();
+    public DbSet<LocationPhoto> LocationPhotos => Set<LocationPhoto>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -117,6 +119,28 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
                 .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasIndex(e => new { e.UserId, e.IsRead });
+        });
+
+        // ProductPhoto configuration
+        modelBuilder.Entity<ProductPhoto>(entity =>
+        {
+            entity.HasOne(e => e.Product)
+                .WithMany(p => p.Photos)
+                .HasForeignKey(e => e.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => new { e.ProductId, e.DisplayOrder });
+        });
+
+        // LocationPhoto configuration
+        modelBuilder.Entity<LocationPhoto>(entity =>
+        {
+            entity.HasOne(e => e.Location)
+                .WithMany(l => l.Photos)
+                .HasForeignKey(e => e.LocationId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => new { e.LocationId, e.DisplayOrder });
         });
     }
 }

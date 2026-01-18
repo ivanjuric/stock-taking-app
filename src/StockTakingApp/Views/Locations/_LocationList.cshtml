@@ -23,6 +23,7 @@
     <table class="table">
         <thead>
             <tr>
+                <th>Photos</th>
                 <th class="@SortClass("code")"
                     hx-get="@SortUrl("code")"
                     hx-target="#list-container"
@@ -64,28 +65,33 @@
                         <path d="M8 4L8 12M8 4L5 7M8 4L11 7"/>
                     </svg>
                 </th>
-                <th></th>
+                <th class="table-actions-header"></th>
             </tr>
         </thead>
         <tbody>
             @foreach (var location in Model.Locations.Items)
             {
                 <tr id="location-@location.Id">
+                    <td>
+                        @await Html.PartialAsync("~/Views/Shared/_PhotoGallery.cshtml", (location.Photos, $"location-{location.Id}"))
+                    </td>
                     <td><code>@location.Code</code></td>
                     <td class="font-medium">@location.Name</td>
                     <td class="text-muted text-sm">@(location.Description ?? "-")</td>
                     <td>@location.ProductCount</td>
                     <td>@location.TotalStock units</td>
-                    <td class="table-actions">
-                        <a asp-controller="Stock" asp-action="Index" asp-route-locationId="@location.Id" class="btn btn-sm btn-secondary">View Stock</a>
-                        <a asp-action="Edit" asp-route-id="@location.Id" class="btn btn-sm btn-secondary">Edit</a>
-                        <button type="button" class="btn btn-sm btn-danger"
-                                hx-delete="/locations/delete/@location.Id"
-                                hx-target="#location-@location.Id"
-                                hx-swap="outerHTML"
-                                hx-confirm="Are you sure you want to delete this location?">
-                            Delete
-                        </button>
+                    <td class="table-actions-cell">
+                        <div class="table-actions">
+                            <a asp-controller="Stock" asp-action="Index" asp-route-locationId="@location.Id" class="btn btn-sm btn-secondary">View Stock</a>
+                            <a asp-action="Edit" asp-route-id="@location.Id" class="btn btn-sm btn-secondary">Edit</a>
+                            <button type="button" class="btn btn-sm btn-danger"
+                                    hx-delete="/locations/delete/@location.Id"
+                                    hx-target="#location-@location.Id"
+                                    hx-swap="outerHTML"
+                                    hx-confirm="Are you sure you want to delete this location?">
+                                Delete
+                            </button>
+                        </div>
                     </td>
                 </tr>
             }
@@ -114,4 +120,10 @@ else
     <div class="card-footer">
         @await Html.PartialAsync("~/Views/Shared/_Pagination.cshtml", Model.Pagination)
     </div>
+}
+
+@* Photo Lightbox Modals - CSS-only using :target *@
+@foreach (var location in Model.Locations.Items)
+{
+    @await Html.PartialAsync("~/Views/Shared/_PhotoLightbox.cshtml", (location.Photos, $"location-{location.Id}"))
 }

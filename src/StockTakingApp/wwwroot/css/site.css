@@ -509,6 +509,12 @@ a:hover {
     height: 36px;
 }
 
+.btn-sm.btn-icon {
+    padding: var(--space-xs);
+    width: 28px;
+    height: 28px;
+}
+
 /* === Forms === */
 .form-group {
     margin-bottom: var(--space-lg);
@@ -637,8 +643,130 @@ textarea.form-control {
 }
 
 .table-actions {
-    display: flex;
+    display: inline-flex;
     gap: var(--space-xs);
+    justify-content: flex-end;
+    white-space: nowrap;
+}
+
+/* Actions column - always right-aligned and minimal width */
+.table th.table-actions-header,
+.table td.table-actions-cell {
+    text-align: right;
+    width: 1%;
+    white-space: nowrap;
+}
+
+/* === Modal (CSS-only using :target) === */
+.modal {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--transition-normal), visibility var(--transition-normal);
+    z-index: 1000;
+}
+
+.modal:target {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-content {
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow: auto;
+    position: relative;
+    animation: modalSlideIn 0.2s ease;
+}
+
+@keyframes modalSlideIn {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-lg);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.modal-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.modal-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: none;
+    border: none;
+    border-radius: var(--radius-md);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 1.5rem;
+    line-height: 1;
+}
+
+.modal-close:hover {
+    background: var(--color-surface-hover);
+    color: var(--color-text);
+    text-decoration: none;
+}
+
+.modal-body {
+    padding: var(--space-xl);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-md);
+}
+
+.modal-backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+}
+
+/* QR Code styles */
+.qr-code-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-md);
+}
+
+.qr-code {
+    padding: var(--space-md);
+    background: white;
+    border-radius: var(--radius-md);
+}
+
+.qr-code-label {
+    font-size: 1.25rem;
+    font-weight: 600;
+    font-family: monospace;
 }
 
 /* Sortable table headers */
@@ -735,7 +863,9 @@ textarea.form-control {
     display: flex;
     align-items: center;
     gap: var(--space-md);
-    margin-bottom: var(--space-lg);
+    padding: var(--space-md) var(--space-lg);
+    background: var(--color-surface-hover);
+    border-bottom: 1px solid var(--color-border);
     flex-wrap: wrap;
 }
 
@@ -1366,3 +1496,389 @@ textarea.form-control {
                 border-color var(--transition-normal),
                 color var(--transition-normal);
 }
+
+/* === Photo Gallery === */
+.photo-gallery {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.gallery-thumbnails {
+    display: flex;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+}
+
+.gallery-thumb {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid var(--color-border);
+    transition: border-color var(--transition-fast), transform var(--transition-fast);
+    flex-shrink: 0;
+}
+
+.gallery-thumb:hover {
+    border-color: var(--color-primary);
+    transform: scale(1.05);
+}
+
+.gallery-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.gallery-thumb-count {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+/* Gallery in table cells - inline thumbnails */
+.table-gallery {
+    display: flex;
+    gap: var(--space-xs);
+    align-items: center;
+}
+
+.table-gallery .gallery-thumb {
+    width: 40px;
+    height: 40px;
+    border-width: 1px;
+}
+
+.table-gallery .gallery-thumb:hover {
+    transform: scale(1.1);
+}
+
+.table-gallery .more-photos {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+}
+
+/* Gallery Lightbox (CSS-only using :target) */
+.gallery-lightbox {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    z-index: 2000;
+    /* No transition on visibility/opacity to prevent flash */
+}
+
+.gallery-lightbox:target {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Backdrop is separate - only first lightbox in group shows it */
+.gallery-lightbox::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+.gallery-lightbox:target::before {
+    opacity: 1;
+}
+
+/* Hide backdrop on all lightboxes except the targeted one to prevent stacking */
+.gallery-lightbox:not(:target)::before {
+    opacity: 0;
+    transition: none;
+}
+
+.lightbox-content {
+    position: relative;
+    max-width: 90vw;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-md);
+}
+
+.lightbox-image {
+    max-width: 100%;
+    max-height: 80vh;
+    object-fit: contain;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+}
+
+.lightbox-caption {
+    color: white;
+    font-size: 0.875rem;
+    text-align: center;
+    max-width: 600px;
+}
+
+.lightbox-close {
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: var(--radius-full);
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background var(--transition-fast);
+}
+
+.lightbox-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+    text-decoration: none;
+    color: white;
+}
+
+.lightbox-backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+}
+
+/* Gallery navigation (CSS-only using radio buttons) */
+.gallery-nav {
+    display: flex;
+    gap: var(--space-md);
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    transform: translateY(-50%);
+    justify-content: space-between;
+    padding: 0 var(--space-lg);
+    pointer-events: none;
+}
+
+.gallery-nav a {
+    pointer-events: auto;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-full);
+    color: white;
+    text-decoration: none;
+    transition: background var(--transition-fast);
+}
+
+.gallery-nav a:hover {
+    background: rgba(255, 255, 255, 0.2);
+    text-decoration: none;
+}
+
+/* Gallery indicators (dots) */
+.gallery-indicators {
+    display: flex;
+    gap: var(--space-xs);
+    justify-content: center;
+    padding: var(--space-sm);
+}
+
+.gallery-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: var(--radius-full);
+    background: rgba(255, 255, 255, 0.3);
+    transition: background var(--transition-fast);
+}
+
+.gallery-indicator.active,
+.gallery-indicator:hover {
+    background: white;
+}
+
+/* Inline gallery for edit/detail pages */
+.gallery-edit {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: var(--space-md);
+}
+
+.gallery-edit-item {
+    position: relative;
+    aspect-ratio: 4/3;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+}
+
+.gallery-edit-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.gallery-edit-item .photo-caption {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: var(--space-xs) var(--space-sm);
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+    color: white;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* No photos placeholder */
+.no-photos {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: var(--color-surface-hover);
+    border-radius: var(--radius-md);
+    color: var(--color-text-light);
+}
+
+.no-photos svg {
+    width: 20px;
+    height: 20px;
+    opacity: 0.5;
+}
+
+/* Main gallery preview (larger thumbnail) */
+.gallery-main-preview {
+    position: relative;
+    width: 100%;
+    max-width: 300px;
+    aspect-ratio: 4/3;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    cursor: pointer;
+}
+
+.gallery-main-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--transition-normal);
+}
+
+.gallery-main-preview:hover img {
+    transform: scale(1.05);
+}
+
+.gallery-main-preview .photo-count {
+    position: absolute;
+    bottom: var(--space-sm);
+    right: var(--space-sm);
+    padding: var(--space-xs) var(--space-sm);
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+/* === Confirm Modal (CSS-only) === */
+.confirm-modal {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--transition-normal), visibility var(--transition-normal);
+    z-index: 3000;
+}
+
+.confirm-modal:target {
+    opacity: 1;
+    visibility: visible;
+}
+
+.confirm-modal-content {
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    max-width: 400px;
+    width: 90%;
+    padding: var(--space-xl);
+    animation: modalSlideIn 0.2s ease;
+    position: relative;
+}
+
+.confirm-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+}
+
+.confirm-modal-icon {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto var(--space-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--status-requested-bg);
+    border-radius: var(--radius-full);
+    color: var(--color-warning);
+}
+
+.confirm-modal-icon svg {
+    width: 24px;
+    height: 24px;
+}
+
+.confirm-modal-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: var(--space-sm);
+}
+
+.confirm-modal-message {
+    text-align: center;
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-xl);
+    line-height: 1.5;
+}
+
+.confirm-modal-actions {
+    display: flex;
+    gap: var(--space-md);
+    justify-content: center;
+}
+
+.confirm-modal-actions .btn {
+    min-width: 100px;
+}
+

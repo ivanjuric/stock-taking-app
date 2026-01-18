@@ -22,6 +22,16 @@ public sealed class ProductViewModel
     public string Category { get; set; } = string.Empty;
 
     public DateTime CreatedAt { get; set; }
+
+    public List<PhotoViewModel> Photos { get; set; } = [];
+}
+
+public sealed class PhotoViewModel
+{
+    public int Id { get; set; }
+    public string Url { get; set; } = string.Empty;
+    public string? Caption { get; set; }
+    public int DisplayOrder { get; set; }
 }
 
 public sealed record ProductListViewModel

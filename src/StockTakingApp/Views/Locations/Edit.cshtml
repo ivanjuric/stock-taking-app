@@ -3,11 +3,30 @@
     ViewData["Title"] = "Edit Location";
 }
 
-<div class="card" style="max-width: 600px;">
+<div class="card" style="max-width: 800px;">
     <div class="card-header">
         <h2 class="card-title">Edit Location</h2>
     </div>
     <div class="card-body">
+        @if (Model.Photos.Count > 0)
+        {
+            <div class="form-group">
+                <label class="form-label">Photos</label>
+                <div class="gallery-edit">
+                    @foreach (var photo in Model.Photos)
+                    {
+                        <a href="#edit-photo-@photo.Id" class="gallery-edit-item" title="@(photo.Caption ?? "View photo")">
+                            <img src="@photo.Url" alt="@(photo.Caption ?? "Photo")" loading="lazy" />
+                            @if (!string.IsNullOrEmpty(photo.Caption))
+                            {
+                                <span class="photo-caption">@photo.Caption</span>
+                            }
+                        </a>
+                    }
+                </div>
+            </div>
+        }
+        
         <form asp-action="Edit" method="post">
             <input type="hidden" asp-for="Id" />
             
@@ -36,3 +55,6 @@
         </form>
     </div>
 </div>
+
+@* Photo Lightbox Modals *@
+@await Html.PartialAsync("~/Views/Shared/_PhotoLightbox.cshtml", (Model.Photos, "edit"))

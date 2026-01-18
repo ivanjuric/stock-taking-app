@@ -21,6 +21,8 @@ public sealed class LocationViewModel
     public DateTime CreatedAt { get; set; }
     public int ProductCount { get; set; }
     public int TotalStock { get; set; }
+
+    public List<PhotoViewModel> Photos { get; set; } = [];
 }
 
 public sealed record LocationListViewModel
