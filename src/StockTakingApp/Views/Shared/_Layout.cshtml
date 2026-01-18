@@ -71,10 +71,37 @@
         };
         
         document.addEventListener('DOMContentLoaded', () => ThemeManager.init());
+        
+        // Mobile menu management
+        const MobileMenu = {
+            toggle() {
+                document.querySelector('.sidebar').classList.toggle('open');
+                document.querySelector('.sidebar-overlay').classList.toggle('open');
+                document.body.classList.toggle('menu-open');
+            },
+            close() {
+                document.querySelector('.sidebar').classList.remove('open');
+                document.querySelector('.sidebar-overlay').classList.remove('open');
+                document.body.classList.remove('menu-open');
+            }
+        };
+        
+        // Close menu when clicking a nav link (for mobile)
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => MobileMenu.close());
+        });
+        
+        // Close menu on resize to desktop
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 1024) {
+                MobileMenu.close();
+            }
+        });
     </script>
     @if (User.Identity?.IsAuthenticated == true)
     {
         <div class="app-layout">
+            <div class="sidebar-overlay" onclick="MobileMenu.close()"></div>
             <aside class="sidebar">
                 <div class="sidebar-header">
                     <div class="sidebar-logo">
@@ -185,7 +212,16 @@
             
             <div class="main-content">
                 <header class="main-header">
-                    <h1 class="page-title">@ViewData["Title"]</h1>
+                    <div class="header-left">
+                        <button type="button" class="mobile-menu-btn btn btn-icon btn-secondary" onclick="MobileMenu.toggle()" aria-label="Toggle menu">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="3" y1="6" x2="21" y2="6"/>
+                                <line x1="3" y1="12" x2="21" y2="12"/>
+                                <line x1="3" y1="18" x2="21" y2="18"/>
+                            </svg>
+                        </button>
+                        <h1 class="page-title">@ViewData["Title"]</h1>
+                    </div>
                     <div class="header-actions">
                         <div class="notification-btn" 
                              hx-ext="sse" 
