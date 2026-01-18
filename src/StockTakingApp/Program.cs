@@ -58,6 +58,9 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
+// Health check endpoint for container orchestration
+app.MapGet("/health", () => Results.Ok("Healthy"));
+
 // Initialize database
 using (var scope = app.Services.CreateScope())
 {

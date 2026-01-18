@@ -1,0 +1,38 @@
+# Build artifacts
+**/bin/
+**/obj/
+**/out/
+
+# IDE and editor files
+.vs/
+.vscode/
+.idea/
+*.swp
+*~
+*.user
+*.suo
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+*.md
+LICENSE
+
+# Test projects
+tests/
+
+# Database files
+*.db
+*.db-shm
+*.db-wal
+
+# Logs
+*.log
+
+# macOS
+.DS_Store
+
+# Misc
+cookies.txt

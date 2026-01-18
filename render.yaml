@@ -1,0 +1,16 @@
+# Render.com deployment configuration
+# https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: stock-taking-app
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+    disk:
+      name: stocktaking-data
+      mountPath: /app/data
+      sizeGB: 1
