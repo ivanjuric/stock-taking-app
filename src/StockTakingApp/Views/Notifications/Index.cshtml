@@ -1,0 +1,79 @@
+@model NotificationListViewModel
+@{
+    ViewData["Title"] = "Notifications";
+}
+
+<div class="card">
+    <div class="card-header">
+        <div class="flex items-center gap-md">
+            <h3 class="card-title">Notifications</h3>
+            @if (Model.UnreadCount > 0)
+            {
+                <span class="badge badge-primary">@Model.UnreadCount unread</span>
+            }
+        </div>
+        @if (Model.UnreadCount > 0)
+        {
+            <button type="button" 
+                    class="btn btn-sm btn-secondary"
+                    hx-post="/notifications/markallasread"
+                    hx-swap="none"
+                    hx-on::after-request="window.location.reload()">
+                Mark All as Read
+            </button>
+        }
+    </div>
+    
+    @if (Model.Notifications.Any())
+    {
+        <div class="notification-list" style="max-height: none;">
+            @foreach (var notification in Model.Notifications)
+            {
+                <a href="@(notification.Link ?? "#")" 
+                   class="notification-item @(notification.IsRead ? "" : "unread")"
+                   @if (!notification.IsRead)
+                   {
+                       @:hx-post="/notifications/markasread/@notification.Id"
+                       @:hx-trigger="click"
+                       @:hx-swap="none"
+                   }>
+                    <div class="notification-icon">
+                        @switch (notification.Type)
+                        {
+                            case NotificationType.StockTakingRequested:
+                                <span>+</span>
+                                break;
+                            case NotificationType.StockTakingStarted:
+                                <span>&#9654;</span>
+                                break;
+                            case NotificationType.StockTakingCompleted:
+                                <span>&#10003;</span>
+                                break;
+                            default:
+                                <span>i</span>
+                                break;
+                        }
+                    </div>
+                    <div class="notification-content">
+                        <div class="notification-title">@notification.Title</div>
+                        <div class="notification-message" style="white-space: normal;">@notification.Message</div>
+                        <div class="notification-time">@notification.TimeAgo</div>
+                    </div>
+                    @if (!notification.IsRead)
+                    {
+                        <div style="width: 8px; height: 8px; background: var(--color-primary); border-radius: 50%;"></div>
+                    }
+                </a>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="card-body">
+            <div class="empty-state">
+                <p>No notifications yet</p>
+                <p class="text-sm text-muted mt-sm">You'll receive notifications when stock takings are assigned or completed.</p>
+            </div>
+        </div>
+    }
+</div>

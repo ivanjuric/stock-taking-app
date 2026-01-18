@@ -1,0 +1,54 @@
+@model StockTakingItemViewModel
+
+<div id="item-@Model.Id" class="count-item @(Model.IsCounted ? "counted" : "")">
+    <div class="count-item-product">
+        <span class="count-item-name">@Model.ProductName</span>
+        <span class="count-item-sku">@Model.ProductSku - @Model.ProductCategory</span>
+    </div>
+
+    <div class="text-center">
+        <div class="text-xs text-muted">Expected</div>
+        <div class="font-semibold">@Model.ExpectedQuantity</div>
+    </div>
+
+    <form hx-post="/stocktaking/countitem"
+          hx-target="#item-@Model.Id"
+          hx-swap="outerHTML"
+          class="count-item-form">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="ItemId" value="@Model.Id" />
+        <input type="number" 
+               name="CountedQuantity" 
+               value="@Model.CountedQuantity" 
+               class="form-control count-input" 
+               min="0" 
+               placeholder="Count"
+               required />
+        <input type="text" 
+               name="Notes" 
+               value="@Model.Notes" 
+               class="form-control count-notes" 
+               placeholder="Notes (optional)" />
+        <button type="submit" class="btn btn-sm @(Model.IsCounted ? "btn-secondary" : "btn-primary")">
+            @(Model.IsCounted ? "Update" : "Save")
+            <span class="htmx-indicator spinner"></span>
+        </button>
+    </form>
+
+    @if (Model.IsCounted && Model.Variance.HasValue)
+    {
+        <div class="count-item-result">
+            <span class="font-medium @Model.VarianceClass">
+                @(Model.Variance > 0 ? "+" : "")@Model.Variance
+            </span>
+            @if (Model.CountedByName != null)
+            {
+                <div class="text-xs text-muted">by @Model.CountedByName</div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="count-item-result"></div>
+    }
+</div>

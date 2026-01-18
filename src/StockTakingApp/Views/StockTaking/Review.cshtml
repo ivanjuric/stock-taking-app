@@ -1,0 +1,138 @@
+@model StockTakingReviewViewModel
+@{
+    ViewData["Title"] = $"Review - {Model.LocationName}";
+    var hasDiscrepancies = Model.DiscrepancyCount > 0;
+}
+
+<div class="mb-lg">
+    <a asp-action="Details" asp-route-id="@Model.Id" class="text-sm text-muted">&larr; Back to Details</a>
+</div>
+
+<div class="stats-grid" style="grid-template-columns: repeat(4, 1fr);">
+    <div class="stat-card">
+        <div class="stat-label">Location</div>
+        <div class="stat-value" style="font-size: 1.25rem;">@Model.LocationCode</div>
+        <div class="text-sm text-muted">@Model.LocationName</div>
+    </div>
+    <div class="stat-card success">
+        <div class="stat-label">Matched Items</div>
+        <div class="stat-value">@Model.MatchedItems</div>
+    </div>
+    <div class="stat-card @(hasDiscrepancies ? "warning" : "success")">
+        <div class="stat-label">Discrepancies</div>
+        <div class="stat-value">@Model.DiscrepancyCount</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Completed</div>
+        <div class="stat-value" style="font-size: 1rem;">@Model.CompletedAt?.ToString("MMM dd, HH:mm")</div>
+        <div class="text-sm text-muted">by @string.Join(", ", Model.AssignedWorkers)</div>
+    </div>
+</div>
+
+@if (hasDiscrepancies)
+{
+    <div class="card mb-lg" style="border-color: var(--color-warning);">
+        <div class="card-header" style="background: var(--status-requested-bg);">
+            <h3 class="card-title text-warning">Items with Discrepancies</h3>
+        </div>
+        <div class="card-body">
+            @foreach (var item in Model.Items.Where(i => i.Variance.HasValue && i.Variance != 0))
+            {
+                <div class="alert-item mb-sm">
+                    <div class="alert-content">
+                        <div class="alert-title">@item.ProductName (@item.ProductSku)</div>
+                        <div class="alert-detail">
+                            Expected: @item.ExpectedQuantity | Counted: @item.CountedQuantity
+                            @if (!string.IsNullOrEmpty(item.Notes))
+                            {
+                                <span>| Note: @item.Notes</span>
+                            }
+                        </div>
+                    </div>
+                    <div class="font-semibold @item.VarianceClass" style="font-size: 1.25rem;">
+                        @(item.Variance > 0 ? "+" : "")@item.Variance
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">All Items (@Model.TotalItems)</h3>
+        @if (!Model.HasAcceptedCounts)
+        {
+            <form asp-action="AcceptCounts" asp-route-id="@Model.Id" method="post"
+                  onsubmit="return confirm('This will update stock levels with the counted quantities. This action cannot be undone. Continue?');">
+                <button type="submit" class="btn btn-success">
+                    Accept Counts & Update Stock
+                </button>
+            </form>
+        }
+        else
+        {
+            <span class="badge badge-success">Counts Accepted</span>
+        }
+    </div>
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Category</th>
+                    <th>Expected</th>
+                    <th>Counted</th>
+                    <th>Variance</th>
+                    <th>Counted By</th>
+                    <th>Counted At</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Items)
+                {
+                    var rowClass = item.Variance switch
+                    {
+                        null => "",
+                        0 => "",
+                        _ => "style=background-color:rgb(254,243,199,0.3)"
+                    };
+                    <tr @Html.Raw(rowClass)>
+                        <td>
+                            <div class="font-medium">@item.ProductName</div>
+                            <div class="text-xs text-muted">@item.ProductSku</div>
+                        </td>
+                        <td><span class="badge badge-primary">@item.ProductCategory</span></td>
+                        <td>@item.ExpectedQuantity</td>
+                        <td class="font-semibold">@item.CountedQuantity</td>
+                        <td>
+                            <span class="font-medium @item.VarianceClass">
+                                @if (item.Variance == 0)
+                                {
+                                    <span>OK</span>
+                                }
+                                else
+                                {
+                                    @($"{(item.Variance > 0 ? "+" : "")}{item.Variance}")
+                                }
+                            </span>
+                        </td>
+                        <td class="text-sm">@item.CountedByName</td>
+                        <td class="text-sm text-muted">@item.CountedAt?.ToString("MMM dd, HH:mm")</td>
+                        <td class="text-sm text-muted">@(item.Notes ?? "-")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="card mt-lg" style="border-color: var(--color-success); background: var(--status-completed-bg);">
+        <div class="card-body text-center">
+            <h3 class="font-semibold text-success">@TempData["Success"]</h3>
+        </div>
+    </div>
+}

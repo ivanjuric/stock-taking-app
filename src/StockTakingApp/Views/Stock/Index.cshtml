@@ -1,0 +1,57 @@
+@model StockListViewModel
+@{
+    ViewData["Title"] = "Stock Levels";
+}
+
+<div class="card">
+    <div class="card-header">
+        <div class="flex items-center gap-md">
+            <form method="get" class="flex gap-sm">
+                <select name="locationId" class="form-control" style="width: 220px;" onchange="this.form.submit()">
+                    <option value="">All Locations</option>
+                    @foreach (var loc in Model.Locations)
+                    {
+                        <option value="@loc.Id" selected="@(Model.LocationId == loc.Id)">@loc.Code - @loc.Name</option>
+                    }
+                </select>
+            </form>
+            @if (Model.LocationName != null)
+            {
+                <span class="badge badge-primary">Filtered: @Model.LocationName</span>
+            }
+        </div>
+        <span class="text-muted text-sm">@Model.Stocks.Count items</span>
+    </div>
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Location</th>
+                    <th>SKU</th>
+                    <th>Product</th>
+                    <th>Category</th>
+                    <th>Quantity</th>
+                    <th>Last Updated</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var stock in Model.Stocks)
+                {
+                    <tr id="stock-@stock.Id">
+                        @await Html.PartialAsync("_StockRow", stock)
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    @if (!Model.Stocks.Any())
+    {
+        <div class="card-body">
+            <div class="empty-state">
+                <p>No stock entries found</p>
+                <p class="text-sm text-muted mt-sm">Stock is automatically created when products and locations exist.</p>
+            </div>
+        </div>
+    }
+</div>

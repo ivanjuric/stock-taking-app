@@ -1,0 +1,62 @@
+@model LocationListViewModel
+@{
+    ViewData["Title"] = "Locations";
+}
+
+<div class="card">
+    <div class="card-header">
+        <form method="get" class="flex gap-sm">
+            <input type="text" name="search" value="@Model.SearchTerm" class="form-control" placeholder="Search locations..." style="width: 250px;" />
+            <button type="submit" class="btn btn-secondary">Search</button>
+        </form>
+        <a asp-action="Create" class="btn btn-primary">
+            + Add Location
+        </a>
+    </div>
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Products</th>
+                    <th>Total Stock</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var location in Model.Locations)
+                {
+                    <tr id="location-@location.Id">
+                        <td><code>@location.Code</code></td>
+                        <td class="font-medium">@location.Name</td>
+                        <td class="text-muted text-sm">@(location.Description ?? "-")</td>
+                        <td>@location.ProductCount</td>
+                        <td>@location.TotalStock units</td>
+                        <td class="table-actions">
+                            <a asp-controller="Stock" asp-action="Index" asp-route-locationId="@location.Id" class="btn btn-sm btn-secondary">View Stock</a>
+                            <a asp-action="Edit" asp-route-id="@location.Id" class="btn btn-sm btn-secondary">Edit</a>
+                            <form asp-action="Delete" asp-route-id="@location.Id" method="post" style="display: inline;"
+                                  hx-delete="/locations/delete/@location.Id"
+                                  hx-target="#location-@location.Id"
+                                  hx-swap="outerHTML"
+                                  hx-confirm="Are you sure you want to delete this location?">
+                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    @if (!Model.Locations.Any())
+    {
+        <div class="card-body">
+            <div class="empty-state">
+                <p>No locations found</p>
+                <a asp-action="Create" class="btn btn-primary mt-md">Add First Location</a>
+            </div>
+        </div>
+    }
+</div>

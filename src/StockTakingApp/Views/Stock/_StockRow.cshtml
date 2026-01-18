@@ -1,0 +1,18 @@
+@model StockViewModel
+
+<td><code>@Model.LocationCode</code></td>
+<td><code>@Model.ProductSku</code></td>
+<td class="font-medium">@Model.ProductName</td>
+<td><span class="badge badge-primary">@Model.ProductCategory</span></td>
+<td>
+    <form hx-post="/stock/update/@Model.Id"
+          hx-target="#stock-@Model.Id"
+          hx-swap="innerHTML"
+          class="flex gap-sm items-center">
+        <input type="hidden" name="id" value="@Model.Id" />
+        <input type="number" name="quantity" value="@Model.Quantity" class="form-control count-input" min="0" />
+        <button type="submit" class="btn btn-sm btn-secondary">Update</button>
+    </form>
+</td>
+<td class="text-muted text-sm">@Model.UpdatedAt.ToString("MMM dd, HH:mm")</td>
+<td></td>

@@ -1,0 +1,46 @@
+@model ProductViewModel
+@{
+    ViewData["Title"] = Model.Id == 0 ? "Create Product" : "Edit Product";
+}
+
+<div class="card" style="max-width: 600px;">
+    <div class="card-header">
+        <h2 class="card-title">@ViewData["Title"]</h2>
+    </div>
+    <div class="card-body">
+        <form asp-action="@(Model.Id == 0 ? "Create" : "Edit")" method="post">
+            <input type="hidden" asp-for="Id" />
+            
+            <div class="form-group">
+                <label asp-for="Sku" class="form-label">SKU</label>
+                <input asp-for="Sku" class="form-control" placeholder="e.g., PROD-001" />
+                <span asp-validation-for="Sku" class="form-error"></span>
+            </div>
+            
+            <div class="form-group">
+                <label asp-for="Name" class="form-label">Name</label>
+                <input asp-for="Name" class="form-control" placeholder="Product name" />
+                <span asp-validation-for="Name" class="form-error"></span>
+            </div>
+            
+            <div class="form-group">
+                <label asp-for="Category" class="form-label">Category</label>
+                <input asp-for="Category" class="form-control" placeholder="e.g., Electronics" />
+                <span asp-validation-for="Category" class="form-error"></span>
+            </div>
+            
+            <div class="form-group">
+                <label asp-for="Description" class="form-label">Description (optional)</label>
+                <textarea asp-for="Description" class="form-control" rows="3" placeholder="Product description..."></textarea>
+                <span asp-validation-for="Description" class="form-error"></span>
+            </div>
+            
+            <div class="flex gap-sm">
+                <button type="submit" class="btn btn-primary">
+                    @(Model.Id == 0 ? "Create Product" : "Save Changes")
+                </button>
+                <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>

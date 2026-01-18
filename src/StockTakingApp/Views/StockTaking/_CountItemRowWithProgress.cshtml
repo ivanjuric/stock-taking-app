@@ -1,0 +1,14 @@
+@model (StockTakingItemViewModel Item, StockTakingPerformViewModel Progress)
+
+@* Main item row - this replaces the target *@
+@await Html.PartialAsync("_CountItemRow", Model.Item)
+
+@* OOB swap for progress counter *@
+<div id="count-progress" hx-swap-oob="true" class="flex items-center gap-md">
+    <div class="text-sm">
+        <span class="font-semibold">@Model.Progress.CountedItems</span> of <span class="font-semibold">@Model.Progress.TotalItems</span> items counted
+    </div>
+    <div class="progress" style="width: 120px;">
+        <div class="progress-bar @(Model.Progress.ProgressPercent == 100 ? "success" : "")" style="width: @Model.Progress.ProgressPercent%"></div>
+    </div>
+</div>

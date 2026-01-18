@@ -1,0 +1,103 @@
+@model WorkerDashboardViewModel
+@using StockTakingApp.Models.Enums
+@{
+    ViewData["Title"] = "My Tasks";
+}
+
+<div class="stats-grid">
+    <div class="stat-card warning">
+        <div class="stat-label">Assigned Tasks</div>
+        <div class="stat-value">@Model.AssignedTasks</div>
+    </div>
+    <div class="stat-card primary">
+        <div class="stat-label">In Progress</div>
+        <div class="stat-value">@Model.InProgressTasks</div>
+    </div>
+    <div class="stat-card success">
+        <div class="stat-label">Completed This Week</div>
+        <div class="stat-value">@Model.CompletedThisWeek</div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">My Assigned Tasks</h2>
+    </div>
+    <div class="card-body">
+        @if (Model.MyTasks.Any())
+        {
+            <div class="task-list">
+                @foreach (var task in Model.MyTasks.OrderByDescending(t => t.Status == StockTakingStatus.InProgress).ThenByDescending(t => t.CreatedAt))
+                {
+                    <div class="task-card">
+                        <div class="task-header">
+                            <div>
+                                <div class="task-title">
+                                    <span class="badge @task.StatusClass">@task.StatusDisplay</span>
+                                    @task.LocationName
+                                </div>
+                                <div class="task-meta">
+                                    @task.LocationCode · @task.TotalItems products to count
+                                </div>
+                            </div>
+                            @if (task.Status == StockTakingStatus.Requested)
+                            {
+                                <a asp-controller="StockTaking" asp-action="Perform" asp-route-id="@task.Id" class="btn btn-primary">
+                                    Start
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="9 18 15 12 9 6"/>
+                                    </svg>
+                                </a>
+                            }
+                            else if (task.Status == StockTakingStatus.InProgress)
+                            {
+                                <a asp-controller="StockTaking" asp-action="Perform" asp-route-id="@task.Id" class="btn btn-success">
+                                    Continue
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="9 18 15 12 9 6"/>
+                                    </svg>
+                                </a>
+                            }
+                        </div>
+                        @if (task.Status == StockTakingStatus.InProgress)
+                        {
+                            <div class="task-progress">
+                                <div class="progress">
+                                    <div class="progress-bar" style="width: @task.ProgressPercent%"></div>
+                                </div>
+                                <div class="progress-text">@task.CountedItems / @task.TotalItems items counted (@task.ProgressPercent%)</div>
+                            </div>
+                        }
+                        <div class="task-footer">
+                            <span class="text-xs text-muted">
+                                @if (task.StartedAt.HasValue)
+                                {
+                                    <text>Started @task.StartedAt.Value.ToString("MMM dd, HH:mm")</text>
+                                }
+                                else
+                                {
+                                    <text>Requested @task.CreatedAt.ToString("MMM dd, HH:mm")</text>
+                                }
+                            </span>
+                            @if (task.AssignedWorkers.Count > 1)
+                            {
+                                <span class="badge badge-primary">Team: @string.Join(", ", task.AssignedWorkers)</span>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity: 0.3;">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+                <h3 class="empty-state-title mt-md">All caught up!</h3>
+                <p>You don't have any pending stock taking tasks.</p>
+            </div>
+        }
+    </div>
+</div>

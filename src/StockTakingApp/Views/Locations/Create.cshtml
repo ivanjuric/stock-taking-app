@@ -1,0 +1,37 @@
+@model LocationViewModel
+@{
+    ViewData["Title"] = "Create Location";
+}
+
+<div class="card" style="max-width: 600px;">
+    <div class="card-header">
+        <h2 class="card-title">Create Location</h2>
+    </div>
+    <div class="card-body">
+        <form asp-action="Create" method="post">
+            <div class="form-group">
+                <label asp-for="Code" class="form-label">Code</label>
+                <input asp-for="Code" class="form-control" placeholder="e.g., WH-A1" />
+                <span asp-validation-for="Code" class="form-error"></span>
+                <p class="form-hint">A short, unique identifier for this location</p>
+            </div>
+            
+            <div class="form-group">
+                <label asp-for="Name" class="form-label">Name</label>
+                <input asp-for="Name" class="form-control" placeholder="e.g., Warehouse A - Section 1" />
+                <span asp-validation-for="Name" class="form-error"></span>
+            </div>
+            
+            <div class="form-group">
+                <label asp-for="Description" class="form-label">Description (optional)</label>
+                <textarea asp-for="Description" class="form-control" rows="3" placeholder="Location details..."></textarea>
+                <span asp-validation-for="Description" class="form-error"></span>
+            </div>
+            
+            <div class="flex gap-sm">
+                <button type="submit" class="btn btn-primary">Create Location</button>
+                <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,90 @@
+@model List<StockTakingListItemViewModel>
+@using StockTakingApp.Models.Enums
+@{
+    ViewData["Title"] = "Stock Taking";
+    var isAdmin = User.IsInRole("Admin");
+}
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Stock Taking Sessions</h3>
+        @if (isAdmin)
+        {
+            <a asp-action="Create" class="btn btn-primary">+ New Stock Taking</a>
+        }
+    </div>
+    
+    @if (Model.Any())
+    {
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Location</th>
+                        <th>Status</th>
+                        <th>Progress</th>
+                        <th>Assigned To</th>
+                        <th>Created</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var st in Model)
+                    {
+                        var statusClass = st.Status switch
+                        {
+                            StockTakingStatus.Requested => "status-requested",
+                            StockTakingStatus.InProgress => "status-in-progress",
+                            StockTakingStatus.Completed => "status-completed",
+                            _ => ""
+                        };
+                        <tr>
+                            <td>
+                                <div class="font-medium">@st.LocationName</div>
+                                <div class="text-xs text-muted">@st.LocationCode</div>
+                            </td>
+                            <td><span class="badge @statusClass">@st.StatusDisplay</span></td>
+                            <td>
+                                <div class="flex items-center gap-sm">
+                                    <div class="progress" style="width: 80px;">
+                                        <div class="progress-bar @(st.ProgressPercent == 100 ? "success" : "")" style="width: @st.ProgressPercent%"></div>
+                                    </div>
+                                    <span class="text-sm text-muted">@st.CountedItems/@st.TotalItems</span>
+                                </div>
+                            </td>
+                            <td class="text-sm">@string.Join(", ", st.AssignedWorkers)</td>
+                            <td class="text-sm text-muted">@st.CreatedAt.ToString("MMM dd, HH:mm")</td>
+                            <td class="table-actions">
+                                <a asp-action="Details" asp-route-id="@st.Id" class="btn btn-sm btn-secondary">View</a>
+                                @if (st.Status == StockTakingStatus.Requested || st.Status == StockTakingStatus.InProgress)
+                                {
+                                    <a asp-action="Perform" asp-route-id="@st.Id" class="btn btn-sm btn-primary">Count</a>
+                                }
+                                @if (isAdmin && st.Status == StockTakingStatus.Completed)
+                                {
+                                    <a asp-action="Review" asp-route-id="@st.Id" class="btn btn-sm btn-success">Review</a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="card-body">
+            <div class="empty-state">
+                <p>No stock taking sessions found</p>
+                @if (isAdmin)
+                {
+                    <a asp-action="Create" class="btn btn-primary mt-md">Create First Stock Taking</a>
+                }
+                else
+                {
+                    <p class="text-sm text-muted mt-sm">You will be notified when assigned to a stock taking session.</p>
+                }
+            </div>
+        </div>
+    }
+</div>

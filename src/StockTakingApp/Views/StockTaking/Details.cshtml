@@ -1,0 +1,141 @@
+@model StockTakingDetailsViewModel
+@{
+    ViewData["Title"] = $"Stock Taking - {Model.LocationName}";
+}
+
+<div class="mb-lg">
+    <a asp-action="Index" class="text-sm text-muted">&larr; Back to Stock Taking</a>
+</div>
+
+<div class="stats-grid" style="grid-template-columns: repeat(4, 1fr);">
+    <div class="stat-card">
+        <div class="stat-label">Location</div>
+        <div class="stat-value" style="font-size: 1.25rem;">@Model.LocationCode</div>
+        <div class="text-sm text-muted">@Model.LocationName</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Status</div>
+        <div><span class="badge @Model.StatusClass" style="font-size: 0.875rem;">@Model.StatusDisplay</span></div>
+    </div>
+    <div class="stat-card primary">
+        <div class="stat-label">Progress</div>
+        <div class="stat-value">@Model.CountedItems / @Model.TotalItems</div>
+        <div class="progress mt-sm">
+            <div class="progress-bar @(Model.ProgressPercent == 100 ? "success" : "")" style="width: @Model.ProgressPercent%"></div>
+        </div>
+    </div>
+    <div class="stat-card @(Model.DiscrepancyCount > 0 ? "warning" : "success")">
+        <div class="stat-label">Discrepancies</div>
+        <div class="stat-value">@Model.DiscrepancyCount</div>
+    </div>
+</div>
+
+<div class="grid-2 mb-lg">
+    <div class="card">
+        <div class="card-body">
+            <h4 class="font-semibold mb-md">Details</h4>
+            <div class="flex flex-col gap-sm text-sm">
+                <div class="flex justify-between">
+                    <span class="text-muted">Requested By:</span>
+                    <span>@Model.RequestedByName</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-muted">Created:</span>
+                    <span>@Model.CreatedAt.ToString("MMM dd, yyyy HH:mm")</span>
+                </div>
+                @if (Model.StartedAt.HasValue)
+                {
+                    <div class="flex justify-between">
+                        <span class="text-muted">Started:</span>
+                        <span>@Model.StartedAt.Value.ToString("MMM dd, yyyy HH:mm")</span>
+                    </div>
+                }
+                @if (Model.CompletedAt.HasValue)
+                {
+                    <div class="flex justify-between">
+                        <span class="text-muted">Completed:</span>
+                        <span>@Model.CompletedAt.Value.ToString("MMM dd, yyyy HH:mm")</span>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-body">
+            <h4 class="font-semibold mb-md">Assigned Workers</h4>
+            <div class="flex flex-col gap-sm">
+                @foreach (var worker in Model.AssignedWorkers)
+                {
+                    <div class="flex items-center gap-sm">
+                        <div class="user-avatar" style="width: 28px; height: 28px; font-size: 0.75rem;">@worker[0]</div>
+                        <span class="text-sm">@worker</span>
+                    </div>
+                }
+            </div>
+            @if (!string.IsNullOrEmpty(Model.Notes))
+            {
+                <h4 class="font-semibold mb-md mt-lg">Notes</h4>
+                <p class="text-sm text-muted">@Model.Notes</p>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Items (@Model.TotalItems)</h3>
+        <div class="flex gap-sm">
+            @if (Model.CanPerform)
+            {
+                <a asp-action="Perform" asp-route-id="@Model.Id" class="btn btn-primary">Perform Count</a>
+            }
+            @if (Model.CanReview)
+            {
+                <a asp-action="Review" asp-route-id="@Model.Id" class="btn btn-success">Review & Accept</a>
+            }
+        </div>
+    </div>
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Category</th>
+                    <th>Expected</th>
+                    <th>Counted</th>
+                    <th>Variance</th>
+                    <th>Counted By</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Items)
+                {
+                    <tr class="@(item.IsCounted ? "counted" : "")">
+                        <td>
+                            <div class="font-medium">@item.ProductName</div>
+                            <div class="text-xs text-muted">@item.ProductSku</div>
+                        </td>
+                        <td><span class="badge badge-primary">@item.ProductCategory</span></td>
+                        <td>@item.ExpectedQuantity</td>
+                        <td class="font-semibold">@(item.CountedQuantity?.ToString() ?? "-")</td>
+                        <td>
+                            @if (item.Variance.HasValue)
+                            {
+                                <span class="font-medium @item.VarianceClass">
+                                    @(item.Variance > 0 ? "+" : "")@item.Variance
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">-</span>
+                            }
+                        </td>
+                        <td class="text-sm text-muted">@(item.CountedByName ?? "-")</td>
+                        <td class="text-sm text-muted">@(item.Notes ?? "-")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

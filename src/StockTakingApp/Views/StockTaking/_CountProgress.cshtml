@@ -1,0 +1,10 @@
+@model StockTakingPerformViewModel
+
+<div id="count-progress" class="flex items-center gap-md">
+    <div class="text-sm">
+        <span class="font-semibold">@Model.CountedItems</span> of <span class="font-semibold">@Model.TotalItems</span> items counted
+    </div>
+    <div class="progress" style="width: 120px;">
+        <div class="progress-bar @(Model.ProgressPercent == 100 ? "success" : "")" style="width: @Model.ProgressPercent%"></div>
+    </div>
+</div>

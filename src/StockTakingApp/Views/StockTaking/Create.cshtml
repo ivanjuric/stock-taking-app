@@ -1,0 +1,58 @@
+@model StockTakingCreateViewModel
+@{
+    ViewData["Title"] = "New Stock Taking";
+}
+
+<div class="card" style="max-width: 600px;">
+    <div class="card-header">
+        <h3 class="card-title">Create Stock Taking</h3>
+    </div>
+    <form asp-action="Create" method="post">
+        <div class="card-body">
+            <div class="form-group">
+                <label asp-for="LocationId" class="form-label">Location *</label>
+                <select asp-for="LocationId" class="form-control">
+                    <option value="">Select a location...</option>
+                    @foreach (var loc in Model.AvailableLocations)
+                    {
+                        <option value="@loc.Id">@loc.Code - @loc.Name</option>
+                    }
+                </select>
+                <span asp-validation-for="LocationId" class="form-error"></span>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Assign Workers *</label>
+                <div class="checkbox-group">
+                    @foreach (var worker in Model.AvailableWorkers)
+                    {
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="AssignedWorkerIds" value="@worker.Id" />
+                            <span>@worker.FullName</span>
+                        </label>
+                    }
+                </div>
+                <span asp-validation-for="AssignedWorkerIds" class="form-error"></span>
+                <p class="form-hint">Select one or more workers to perform this stock taking.</p>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Notes" class="form-label">Notes (Optional)</label>
+                <textarea asp-for="Notes" class="form-control" rows="3" placeholder="Add any special instructions..."></textarea>
+            </div>
+        </div>
+        <div class="card-footer flex justify-between">
+            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary">Create Stock Taking</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.querySelectorAll('.checkbox-label').forEach(label => {
+        const checkbox = label.querySelector('input[type="checkbox"]');
+        checkbox.addEventListener('change', () => {
+            label.classList.toggle('selected', checkbox.checked);
+        });
+    });
+</script>

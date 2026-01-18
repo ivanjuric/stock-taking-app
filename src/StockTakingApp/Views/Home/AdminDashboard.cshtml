@@ -1,0 +1,145 @@
+@model AdminDashboardViewModel
+@using StockTakingApp.Models.Enums
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="stats-grid">
+    <div class="stat-card primary">
+        <div class="stat-label">Total Products</div>
+        <div class="stat-value">@Model.TotalProducts</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Locations</div>
+        <div class="stat-value">@Model.TotalLocations</div>
+    </div>
+    <div class="stat-card warning">
+        <div class="stat-label">Pending Stock Takes</div>
+        <div class="stat-value">@Model.PendingStockTakings</div>
+    </div>
+    <div class="stat-card primary">
+        <div class="stat-label">In Progress</div>
+        <div class="stat-value">@Model.InProgressStockTakings</div>
+    </div>
+    <div class="stat-card success">
+        <div class="stat-label">Completed This Week</div>
+        <div class="stat-value">@Model.CompletedThisWeek</div>
+    </div>
+    <div class="stat-card danger">
+        <div class="stat-label">Total Discrepancies</div>
+        <div class="stat-value">@Model.TotalDiscrepancies</div>
+    </div>
+</div>
+
+<div class="grid-2">
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Recent Stock Takings</h2>
+            <a asp-controller="StockTaking" asp-action="Create" class="btn btn-primary btn-sm">
+                + New Stock Taking
+            </a>
+        </div>
+        <div class="card-body">
+            @if (Model.RecentStockTakings.Any())
+            {
+                <div class="task-list">
+                    @foreach (var st in Model.RecentStockTakings)
+                    {
+                        <div class="task-card">
+                            <div class="task-header">
+                                <div>
+                                    <div class="task-title">
+                                        <span class="badge @st.StatusClass">@st.StatusDisplay</span>
+                                        @st.LocationName
+                                    </div>
+                                    <div class="task-meta">
+                                        @st.LocationCode · Assigned to @string.Join(", ", st.AssignedWorkers)
+                                    </div>
+                                </div>
+                            </div>
+                            @if (st.Status == StockTakingStatus.InProgress || st.Status == StockTakingStatus.Completed)
+                            {
+                                <div class="task-progress">
+                                    <div class="progress">
+                                        <div class="progress-bar @(st.Status == StockTakingStatus.Completed ? "success" : "")" style="width: @st.ProgressPercent%"></div>
+                                    </div>
+                                    <div class="progress-text">@st.CountedItems / @st.TotalItems items counted</div>
+                                </div>
+                            }
+                            <div class="task-footer">
+                                <span class="text-xs text-muted">
+                                    @if (st.CompletedAt.HasValue)
+                                    {
+                                        <text>Completed @st.CompletedAt.Value.ToString("MMM dd, HH:mm")</text>
+                                    }
+                                    else if (st.StartedAt.HasValue)
+                                    {
+                                        <text>Started @st.StartedAt.Value.ToString("MMM dd, HH:mm")</text>
+                                    }
+                                    else
+                                    {
+                                        <text>Created @st.CreatedAt.ToString("MMM dd, HH:mm")</text>
+                                    }
+                                </span>
+                                <a asp-controller="StockTaking" asp-action="Details" asp-route-id="@st.Id" class="btn btn-sm btn-secondary">
+                                    View
+                                </a>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="empty-state">
+                    <p>No stock takings yet</p>
+                    <a asp-controller="StockTaking" asp-action="Create" class="btn btn-primary">Create First Stock Taking</a>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Discrepancy Alerts</h2>
+        </div>
+        <div class="card-body">
+            @if (Model.DiscrepancyAlerts.Any())
+            {
+                <div class="task-list">
+                    @foreach (var alert in Model.DiscrepancyAlerts)
+                    {
+                        <a asp-controller="StockTaking" asp-action="Review" asp-route-id="@alert.StockTakingId" class="alert-item" style="text-decoration: none;">
+                            <div class="alert-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                                    <line x1="12" y1="9" x2="12" y2="13"/>
+                                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                                </svg>
+                            </div>
+                            <div class="alert-content">
+                                <div class="alert-title">@alert.ProductName</div>
+                                <div class="alert-detail">
+                                    @alert.LocationName · Expected: @alert.ExpectedQuantity, Counted: @alert.CountedQuantity
+                                    <span class="@(alert.Variance > 0 ? "variance-over" : "variance-under")">
+                                        (@(alert.Variance > 0 ? "+" : "")@alert.VariancePercent%)
+                                    </span>
+                                </div>
+                            </div>
+                        </a>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="empty-state">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity: 0.3;">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                        <polyline points="22 4 12 14.01 9 11.01"/>
+                    </svg>
+                    <p class="mt-md">No discrepancies found</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
