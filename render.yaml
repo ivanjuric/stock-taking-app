@@ -10,7 +10,10 @@ services:
     envVars:
       - key: ASPNETCORE_ENVIRONMENT
         value: Production
-    disk:
-      name: stocktaking-data
-      mountPath: /app/data
-      sizeGB: 1
+    # Note: Persistent disk requires a paid plan.
+    # Without it, SQLite data will be lost on redeploy.
+    # For production, upgrade to a paid plan and uncomment:
+    # disk:
+    #   name: stocktaking-data
+    #   mountPath: /app/data
+    #   sizeGB: 1
