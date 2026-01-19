@@ -67,7 +67,16 @@ using (var scope = app.Services.CreateScope())
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     var authService = scope.ServiceProvider.GetRequiredService<IAuthService>();
     
-    context.Database.EnsureCreated();
+    // Apply pending migrations for relational databases, or EnsureCreated for in-memory (tests)
+    if (context.Database.IsRelational())
+    {
+        context.Database.Migrate();
+    }
+    else
+    {
+        context.Database.EnsureCreated();
+    }
+    
     await DbSeeder.SeedAsync(context, authService);
 }
 

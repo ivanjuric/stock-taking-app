@@ -9,6 +9,7 @@ public class User
     public required string PasswordHash { get; set; }
     public required string FullName { get; set; }
     public UserRole Role { get; set; }
+    public ThemePreference ThemePreference { get; set; } = ThemePreference.System;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     // Navigation properties
